@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/map.dart';
+import 'package:skip_ohoi/menu.dart';
 
 void main() {
   runApp(MyApp());
@@ -29,20 +30,49 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var mapType = 0;
+  var mapType = MapType.ENC;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Map(mapType: mapType),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.layers),
-        onPressed: () {
-          setState(() {
-            mapType = mapType == 0 ? 1 : 0;
-          });
-        },
-      ),
+      body: Stack(children: [
+        Map(mapType: mapType),
+        Positioned(
+          top: 8,
+          left: 8,
+          child: SafeArea(
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              child: Icon(Icons.menu, color: Colors.black87),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  builder: (context) {
+                    return StatefulBuilder(builder: (context, setState) {
+                      return Menu(
+                        activeMapType: mapType,
+                        onChangeMapType: (mapType) {
+                          setState(() {
+                            this.mapType = mapType;
+                          });
+                          this.setState(() {
+                            this.mapType = mapType;
+                          });
+                        },
+                      );
+                    });
+                  },
+                );
+              },
+              mini: true,
+            ),
+          ),
+        )
+      ]),
     );
   }
 }

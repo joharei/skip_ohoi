@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,7 +8,13 @@ import 'package:latlong/latlong.dart';
 import 'package:proj4dart/proj4dart.dart' as proj4;
 import 'package:skip_ohoi/secrets.dart';
 
-var resolutions = <double>[
+enum MapType {
+  ENC,
+  SJOKARTRASTER,
+  ENIRO,
+}
+
+const _resolutions = <double>[
   21664,
   10832,
   5416,
@@ -27,13 +34,13 @@ var resolutions = <double>[
   0.33056640625,
   0.165283203125
 ];
-var maxZoom = (resolutions.length - 1).toDouble();
+final _maxZoom = (_resolutions.length - 1).toDouble();
 
-var epsg25833CRS = Proj4Crs.fromFactory(
+final _epsg25833CRS = Proj4Crs.fromFactory(
   code: 'EPSG:25833',
   proj4Projection: proj4.Projection.add('EPSG:25833',
       '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'),
-  resolutions: resolutions,
+  resolutions: _resolutions,
 );
 
 class Map extends StatefulWidget {
@@ -42,7 +49,7 @@ class Map extends StatefulWidget {
     @required this.mapType,
   }) : super(key: key);
 
-  final int mapType;
+  final MapType mapType;
 
   @override
   _MapState createState() => _MapState();
@@ -56,41 +63,52 @@ class _MapState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
+    developer.log(widget.mapType.toString());
     refreshEncTokens();
     return FlutterMap(
       options: MapOptions(
         center: LatLng(59.002671, 5.754133),
         zoom: 10.0,
-        crs: widget.mapType == 0 ? epsg25833CRS : Epsg3857(),
+        crs: widget.mapType == MapType.ENC ? _epsg25833CRS : Epsg3857(),
       ),
       layers: [
-        if (widget.mapType == 0 && ticket.isNotEmpty && gkt.isNotEmpty)
+        if (widget.mapType == MapType.ENC &&
+            ticket.isNotEmpty &&
+            gkt.isNotEmpty)
           TileLayerOptions(
             wmsOptions: WMSTileLayerOptions(
               baseUrl:
                   'https://wms.geonorge.no/skwms1/wms.ecc_enc?ticket={ticket}&gkt={gkt}',
               layers: ['cells'],
               styles: ['style-id-260'],
-              crs: epsg25833CRS,
+              crs: _epsg25833CRS,
             ),
             additionalOptions: {
               'ticket': ticket,
               'gkt': gkt,
             },
-            maxZoom: maxZoom,
+            maxZoom: _maxZoom,
             errorTileCallback: (tile, error) {
               refreshEncTokens();
             },
             rebuild: layerRebuilder.stream,
           ),
-        if (widget.mapType == 1)
+        if (widget.mapType == MapType.SJOKARTRASTER)
           TileLayerOptions(
             urlTemplate:
                 'https://opencache{s}.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=sjokartraster&zoom={z}&x={x}&y={y}',
             subdomains: ['', '2', '3'],
             maxZoom: 19,
             rebuild: layerRebuilder.stream,
-          )
+          ),
+        if (widget.mapType == MapType.ENIRO)
+          TileLayerOptions(
+            urlTemplate:
+                'http://map0{s}.eniro.no/geowebcache/service/tms1.0.0/nautical/{z}/{x}/{y}.png',
+            subdomains: ['1', '2', '3', '4'],
+            tms: true,
+            rebuild: layerRebuilder.stream,
+          ),
       ],
     );
   }
@@ -110,9 +128,10 @@ class _MapState extends State<Map> {
   }
 
   void refreshEncTokens() {
-    if (ticket.isNotEmpty &&
-        gkt.isNotEmpty &&
-        timeStamp.add(Duration(seconds: 15)).isAfter(DateTime.now())) {
+    if (widget.mapType != MapType.ENC ||
+        ticket.isNotEmpty &&
+            gkt.isNotEmpty &&
+            timeStamp.add(Duration(seconds: 15)).isAfter(DateTime.now())) {
       return;
     }
     setState(() {

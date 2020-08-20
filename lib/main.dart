@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context: context,
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
+                        BorderRadius.vertical(top: Radius.circular(8)),
                   ),
                   builder: (context) {
                     return StatefulBuilder(builder: (context, setState) {

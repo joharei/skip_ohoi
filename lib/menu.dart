@@ -36,10 +36,26 @@ class Menu extends StatelessWidget {
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         height: 200,
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.only(top: 8, bottom: 16, left: 16, right: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+              child: SizedBox(
+                width: 24,
+                height: 3,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor,
+                    borderRadius: BorderRadius.horizontal(
+                      left: Radius.circular(16),
+                      right: Radius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
             Text(
               'KARTTYPE',
               style: Theme.of(context)

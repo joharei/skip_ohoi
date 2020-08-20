@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/map.dart';
 import 'package:skip_ohoi/menu.dart';
 
@@ -12,7 +13,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: navyBlue,
+        iconTheme: IconThemeData(color: richBlack),
+        textTheme: Theme.of(context).textTheme.apply(
+              bodyColor: richBlack,
+              displayColor: richBlack,
+            ),
+        accentColor: coquelicot,
+        buttonColor: nyanza,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: nyanza,
+        ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(title: 'Flutter Demo Home Page'),

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.V29.LaunchTheme" parent="Theme.V19.LaunchTheme">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+    <style name="LaunchTheme" parent="Theme.V29.LaunchTheme" />
+
+    <style name="Theme.V29.NormalTheme" parent="Theme.V19.NormalTheme">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+    <style name="NormalTheme" parent="Theme.V29.NormalTheme" />
+</resources>

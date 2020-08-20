@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.V19.LaunchTheme" parent="Base.Theme.LaunchTheme">
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+    <style name="LaunchTheme" parent="Theme.V19.LaunchTheme" />
+
+    <style name="Theme.V19.NormalTheme" parent="Base.Theme.NormalTheme">
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+    <style name="NormalTheme" parent="Theme.V19.NormalTheme" />
+</resources>

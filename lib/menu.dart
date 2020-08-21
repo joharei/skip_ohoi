@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skip_ohoi/map.dart';
+import 'package:skip_ohoi/map/map.dart';
 
 const _mapTypes = [
   {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/colors.dart';
-import 'package:skip_ohoi/map.dart';
+import 'package:skip_ohoi/map/map.dart';
 import 'package:skip_ohoi/menu.dart';
 
 void main() {

@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
-import 'package:proj4dart/proj4dart.dart' as proj4;
+import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/map/animated_map_move.dart';
 import 'package:skip_ohoi/map/animated_marker_move.dart';
 import 'package:skip_ohoi/secrets.dart';
@@ -17,35 +18,6 @@ enum MapType {
   SJOKARTRASTER,
   ENIRO,
 }
-
-const _resolutions = <double>[
-  21664,
-  10832,
-  5416,
-  2708,
-  1354,
-  677,
-  338.5,
-  169.25,
-  84.625,
-  42.3125,
-  21.15625,
-  10.578125,
-  5.2890625,
-  2.64453125,
-  1.322265625,
-  0.6611328125,
-  0.33056640625,
-  0.165283203125
-];
-final _maxZoom = (_resolutions.length - 1).toDouble();
-
-final _epsg25833CRS = Proj4Crs.fromFactory(
-  code: 'EPSG:25833',
-  proj4Projection: proj4.Projection.add('EPSG:25833',
-      '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'),
-  resolutions: _resolutions,
-);
 
 class Map extends StatefulWidget {
   const Map({
@@ -60,22 +32,26 @@ class Map extends StatefulWidget {
 }
 
 class _MapState extends State<Map> with TickerProviderStateMixin {
+  static const _myLocationSize = 40.0;
+  final _layerRebuilder = StreamController<Null>.broadcast();
+  final _mapController = MapController();
+  final _markers = <Marker>[];
   String ticket = '';
   String gkt = '';
   DateTime timeStamp = DateTime.now();
   LatLng _location;
   double _heading = 0;
-  final _layerRebuilder = StreamController<Null>();
-  final _mapController = MapController();
-  final _markers = <Marker>[];
+  double _accuracy = 0;
   StreamSubscription<LocationData> _sub;
 
   @override
   void initState() {
     super.initState();
 
-    _sub = Location.instance.onLocationChanged.listen((ld) {
+    Location().changeSettings(accuracy: LocationAccuracy.high, interval: 500);
+    _sub = Location().onLocationChanged.listen((ld) {
       _heading = ld.heading;
+      _accuracy = ld.accuracy;
       if (_location == null) {
         setState(() {
           _location = LatLng(ld.latitude, ld.longitude);
@@ -100,7 +76,7 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
           options: MapOptions(
             center: LatLng(59.002671, 5.754133),
             zoom: 10.0,
-            crs: widget.mapType == MapType.ENC ? _epsg25833CRS : Epsg3857(),
+            maxZoom: widget.mapType == MapType.SJOKARTRASTER ? 19 : 18,
           ),
           mapController: _mapController,
           layers: [
@@ -113,13 +89,11 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
                       'https://wms.geonorge.no/skwms1/wms.ecc_enc?ticket={ticket}&gkt={gkt}',
                   layers: ['cells'],
                   styles: ['style-id-260'],
-                  crs: _epsg25833CRS,
                 ),
                 additionalOptions: {
                   'ticket': ticket,
                   'gkt': gkt,
                 },
-                maxZoom: _maxZoom,
                 errorTileCallback: (tile, error) {
                   refreshEncTokens();
                 },
@@ -130,7 +104,6 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
                 urlTemplate:
                     'https://opencache{s}.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=sjokartraster&zoom={z}&x={x}&y={y}',
                 subdomains: ['', '2', '3'],
-                maxZoom: 19,
                 rebuild: _layerRebuilder.stream,
               ),
             if (widget.mapType == MapType.ENIRO)
@@ -141,21 +114,46 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
                 tms: true,
                 rebuild: _layerRebuilder.stream,
               ),
-            MarkerLayerOptions(markers: [
-              ..._markers,
-              Marker(
-                point: _location,
-                height: 60,
-                anchorPos: AnchorPos.exactly(Anchor(8.97, 50)),
-                builder: (context) {
-                  return AnimatedContainer(
-                    duration: Duration(milliseconds: 200),
-                    transform: Matrix4.rotationZ(vector_math.radians(_heading)),
-                    child: SvgPicture.asset('images/boat.svg'),
-                  );
-                },
-              ),
-            ]),
+            CircleLayerOptions(
+              circles: [
+                if (_location != null)
+                  CircleMarker(
+                    point: _location,
+                    color: navyBlue.withOpacity(0.1),
+                    borderStrokeWidth: 1,
+                    borderColor: navyBlue.withOpacity(0.2),
+                    useRadiusInMeter: true,
+                    radius: _accuracy,
+                  ),
+              ],
+              rebuild: _layerRebuilder.stream,
+            ),
+            MarkerLayerOptions(
+              markers: [
+                ..._markers,
+                if (_location != null)
+                  Marker(
+                    point: _location,
+                    height: _myLocationSize,
+                    width: _myLocationSize,
+                    anchorPos: AnchorPos.align(AnchorAlign.center),
+                    builder: (context) {
+                      return TweenAnimationBuilder(
+                        tween: Tween(begin: _heading, end: _heading),
+                        duration: Duration(milliseconds: 1000),
+                        child: SvgPicture.asset('images/boat.svg'),
+                        builder: (context, value, child) {
+                          return Transform.rotate(
+                            angle: vector_math.radians(value),
+                            child: child,
+                          );
+                        },
+                      );
+                    },
+                  ),
+              ],
+              rebuild: _layerRebuilder.stream,
+            ),
           ],
         ),
         Align(
@@ -166,18 +164,19 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
               right: 16.0,
             ),
             child: FloatingActionButton(
-                backgroundColor: Theme.of(context).primaryColor,
-                child: const Icon(Icons.location_searching),
-                onPressed: () => {
-                      Location.instance.getLocation().then((ld) {
-                        animatedMapMove(
-                          _mapController,
-                          this,
-                          LatLng(ld.latitude, ld.longitude),
-                          14,
-                        );
-                      })
-                    }),
+              backgroundColor: Theme.of(context).primaryColor,
+              child: const Icon(Icons.location_searching),
+              onPressed: () {
+                if (_location != null) {
+                  animatedMapMove(
+                    _mapController,
+                    this,
+                    LatLng(_location.latitude, _location.longitude),
+                    16,
+                  );
+                }
+              },
+            ),
           ),
         ),
       ],
@@ -206,9 +205,7 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
             timeStamp.add(Duration(seconds: 15)).isAfter(DateTime.now())) {
       return;
     }
-    setState(() {
-      timeStamp = DateTime.now();
-    });
+    timeStamp = DateTime.now();
     Future.wait([http.get(gateKeeperTicketUrl), http.get(gateKeeperTokenUrl)])
         .then((responses) {
       String value(String body) =>

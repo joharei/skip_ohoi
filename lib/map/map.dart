@@ -10,6 +10,7 @@ import 'package:location/location.dart';
 import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/map/animated_map_move.dart';
 import 'package:skip_ohoi/map/animated_marker_move.dart';
+import 'package:skip_ohoi/map/scalebar/scale_bar_plugin.dart';
 import 'package:skip_ohoi/secrets.dart';
 import 'package:vector_math/vector_math.dart' as vector_math;
 
@@ -74,10 +75,10 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
       children: [
         FlutterMap(
           options: MapOptions(
-            center: LatLng(59.002671, 5.754133),
-            zoom: 10.0,
-            maxZoom: widget.mapType == MapType.SJOKARTRASTER ? 19 : 18,
-          ),
+              center: LatLng(59.002671, 5.754133),
+              zoom: 10.0,
+              maxZoom: widget.mapType == MapType.SJOKARTRASTER ? 19 : 18,
+              plugins: [ScaleLayerPlugin()]),
           mapController: _mapController,
           layers: [
             if (widget.mapType == MapType.ENC &&
@@ -153,6 +154,16 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
                   ),
               ],
               rebuild: _layerRebuilder.stream,
+            ),
+            ScaleLayerPluginOption(
+              lineColor: navyBlue,
+              lineWidth: 2,
+              textStyle: TextStyle(color: navyBlue, fontSize: 12),
+              padding: EdgeInsets.only(
+                left: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 38,
+              ),
+              alignment: Alignment.bottomLeft,
             ),
           ],
         ),

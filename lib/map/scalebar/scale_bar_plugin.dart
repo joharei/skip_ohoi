@@ -79,6 +79,16 @@ class ScaleLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     var zoom = map.zoom;
     var distance = scale[max(0, min(20, zoom.round() + 2))].toDouble();
+    if (distance > 500) {
+      if (distance.toNauticalMile < 1.0) {
+        distance = (distance.toNauticalMile * 10).roundToDouble() / 10;
+      } else if (distance.toNauticalMile < 10) {
+        distance = distance.toNauticalMile.roundToDouble();
+      } else {
+        distance = ((distance.toNauticalMile ~/ 10) * 10).toDouble();
+      }
+      distance = distance.toMeter(LengthUnit.nauticalMile);
+    }
     var center = map.center;
     var start = map.project(center);
     var targetPoint =

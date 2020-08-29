@@ -75,10 +75,11 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
       children: [
         FlutterMap(
           options: MapOptions(
-              center: LatLng(59.002671, 5.754133),
-              zoom: 10.0,
-              maxZoom: widget.mapType == MapType.SJOKARTRASTER ? 19 : 18,
-              plugins: [ScaleLayerPlugin()]),
+            center: LatLng(59.002671, 5.754133),
+            zoom: 10.0,
+            maxZoom: widget.mapType == MapType.SJOKARTRASTER ? 19 : 18,
+            plugins: [ScaleLayerPlugin()],
+          ),
           mapController: _mapController,
           layers: [
             if (widget.mapType == MapType.ENC &&

@@ -4,9 +4,10 @@ import 'dart:isolate';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:skip_ohoi/colors.dart';
+import 'package:skip_ohoi/dash_bottom_app_bar.dart';
 import 'package:skip_ohoi/map/map.dart';
-import 'package:skip_ohoi/menu.dart';
 
 void main() {
   FlutterError.onError = Crashlytics.instance.recordFlutterError;
@@ -35,6 +36,10 @@ class MyApp extends StatelessWidget {
               bodyColor: richBlack,
               displayColor: richBlack,
             ),
+        backgroundColor: nyanza,
+        scaffoldBackgroundColor: nyanza,
+        canvasColor: nyanza,
+        bottomAppBarColor: nyanza,
         accentColor: coquelicot,
         buttonColor: nyanza,
         floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -53,79 +58,61 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var mapType = MapType.ENC;
+  var mapType = MapType.SJOKARTRASTER;
   final _initialization = Firebase.initializeApp();
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initialization,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
+    return AnnotatedRegion(
+      value: SystemUiOverlayStyle(
+        systemNavigationBarColor: Theme.of(context).backgroundColor,
+        systemNavigationBarIconBrightness:
+            Theme.of(context).brightness == Brightness.light
+                ? Brightness.dark
+                : Brightness.light,
+      ),
+      child: FutureBuilder(
+        future: _initialization,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Scaffold(
+              backgroundColor: navyBlue,
+              body: Center(
+                child: Text(
+                  'Splitte mine bramseil!',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline4
+                      .copyWith(color: nyanza),
+                ),
+              ),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Scaffold(
+              body: Map(mapType: mapType),
+              bottomNavigationBar: DashBottomAppBar(
+                mapType: mapType,
+                onChangeMapType: (mapType) {
+                  setState(() {
+                    this.mapType = mapType;
+                  });
+                  this.setState(() {
+                    this.mapType = mapType;
+                  });
+                },
+              ),
+            );
+          }
           return Scaffold(
             backgroundColor: navyBlue,
             body: Center(
-              child: Text(
-                'Splitte mine bramseil!',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline4
-                    .copyWith(color: nyanza),
-              ),
+              child: CircularProgressIndicator(),
             ),
           );
-        }
-
-        if (snapshot.connectionState == ConnectionState.done) {
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
-            body: Stack(children: [
-              Map(mapType: mapType),
-              Positioned(
-                top: 8,
-                left: 8,
-                child: SafeArea(
-                  child: FloatingActionButton(
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.menu, color: Colors.black87),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(8)),
-                        ),
-                        builder: (context) {
-                          return StatefulBuilder(builder: (context, setState) {
-                            return Menu(
-                              activeMapType: mapType,
-                              onChangeMapType: (mapType) {
-                                setState(() {
-                                  this.mapType = mapType;
-                                });
-                                this.setState(() {
-                                  this.mapType = mapType;
-                                });
-                              },
-                            );
-                          });
-                        },
-                      );
-                    },
-                    mini: true,
-                  ),
-                ),
-              )
-            ]),
-          );
-        }
-        return Scaffold(
-          backgroundColor: navyBlue,
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 }

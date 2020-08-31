@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:international_system_of_units/international_system_of_units.dart';
 import 'package:skip_ohoi/features/menu/ui.dart';
+import 'package:skip_ohoi/state.dart';
 
 class Dashboard extends StatelessWidget {
   @override
@@ -29,14 +31,36 @@ class Dashboard extends StatelessWidget {
             )
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Text('Fart'),
-            Text('Trip'),
-            Text('COG'),
-          ],
-        )
+        locationState.rebuilder(() {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    'Fart (knop)',
+                    style: Theme.of(context).textTheme.subtitle1,
+                  ),
+                  Text(
+                    locationState.state.speed.toKnot.toStringAsFixed(1),
+                    style: Theme.of(context).textTheme.headline4,
+                  ),
+                ],
+              ),
+              // TODO
+              // Text('Trip'),
+              Column(
+                children: [
+                  Text('COG', style: Theme.of(context).textTheme.subtitle1),
+                  Text(
+                    '${locationState.state.heading.toStringAsFixed(0)}°',
+                    style: Theme.of(context).textTheme.headline4,
+                  )
+                ],
+              ),
+            ],
+          );
+        }),
       ],
     );
   }

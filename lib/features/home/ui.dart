@@ -2,8 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:skip_ohoi/colors.dart';
-import 'package:skip_ohoi/features/dash_bottom_app_bar/ui.dart';
+import 'package:skip_ohoi/features/dashboard/ui.dart';
 import 'package:skip_ohoi/features/map/ui.dart';
+import 'package:skip_ohoi/state.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -44,7 +45,20 @@ class _MyHomePageState extends State<MyHomePage> {
           if (snapshot.connectionState == ConnectionState.done) {
             return Scaffold(
               body: Map(),
-              bottomNavigationBar: DashBottomAppBar(),
+              extendBody: true,
+              bottomNavigationBar: BottomAppBar(
+                child: Dashboard(),
+                shape: CircularNotchedRectangle(),
+              ),
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: Theme.of(context).primaryColor,
+                child: const Icon(Icons.location_searching),
+                onPressed: () {
+                  zoomToLocationState.setState((s) => Zoom());
+                },
+              ),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.endDocked,
             );
           }
           return Scaffold(

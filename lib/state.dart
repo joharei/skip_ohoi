@@ -14,3 +14,7 @@ final locationState = RM.injectStream(
   onInitialized: (_) =>
       Location().changeSettings(accuracy: LocationAccuracy.high, interval: 500),
 );
+
+class Zoom {}
+
+final zoomToLocationState = RM.inject(() => Zoom());

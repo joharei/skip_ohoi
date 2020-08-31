@@ -36,6 +36,11 @@ dependencies:
   http: ^0.12.2
   international_system_of_units: ^1.0.0-dev.4
   location: ^3.0.2
+  states_rebuilder:
+    git:
+      url: https://github.com/GIfatahTH/states_rebuilder.git
+      ref: v-3.0.0
+      path: states_rebuilder_package
 
 dev_dependencies:
   flutter_test:

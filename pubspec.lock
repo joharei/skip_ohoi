@@ -434,6 +434,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.10.0-nullsafety"
+  states_rebuilder:
+    dependency: "direct main"
+    description:
+      path: states_rebuilder_package
+      ref: "v-3.0.0"
+      resolved-ref: "1c7983e62799ab95d8c8eccb514b0ca5a1ba1596"
+      url: "https://github.com/GIfatahTH/states_rebuilder.git"
+    source: git
+    version: "3.0.0"
   stream_channel:
     dependency: transitive
     description:

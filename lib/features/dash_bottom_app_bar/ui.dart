@@ -1,17 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:skip_ohoi/map/map.dart';
-import 'package:skip_ohoi/menu.dart';
+import 'package:skip_ohoi/features/menu/ui.dart';
 
 class DashBottomAppBar extends StatelessWidget {
-  final MapType mapType;
-  final Function onChangeMapType;
-
-  const DashBottomAppBar({
-    Key key,
-    this.mapType,
-    this.onChangeMapType,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
@@ -32,10 +22,7 @@ class DashBottomAppBar extends StatelessWidget {
                     ),
                     builder: (context) {
                       return StatefulBuilder(builder: (context, setState) {
-                        return Menu(
-                          activeMapType: mapType,
-                          onChangeMapType: onChangeMapType,
-                        );
+                        return Menu();
                       });
                     },
                   );

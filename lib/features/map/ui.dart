@@ -6,7 +6,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong/latlong.dart';
-import 'package:location/location.dart';
 import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/map/animated_map_move.dart';
 import 'package:skip_ohoi/features/map/animated_marker_move.dart';
@@ -30,30 +29,35 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
   String gkt = '';
   DateTime timeStamp = DateTime.now();
   LatLng _location;
-  double _heading = 0;
-  double _accuracy = 0;
-  StreamSubscription<LocationData> _sub;
+  Disposer _sub;
 
   @override
   void initState() {
     super.initState();
 
-    Location().changeSettings(accuracy: LocationAccuracy.high, interval: 500);
-    _sub = Location().onLocationChanged.listen((ld) {
-      _heading = ld.heading;
-      _accuracy = ld.accuracy;
+    _sub = locationState.getRM.listenToRM((model) {
       if (_location == null) {
         setState(() {
-          _location = LatLng(ld.latitude, ld.longitude);
+          _location = LatLng(
+            locationState.state.latitude,
+            locationState.state.longitude,
+          );
         });
-        return;
-      }
-      animatedMarkerMove(this, _location, LatLng(ld.latitude, ld.longitude),
+      } else {
+        animatedMarkerMove(
+          this,
+          _location,
+          LatLng(
+            locationState.state.latitude,
+            locationState.state.longitude,
+          ),
           (newLocation) {
-        setState(() {
-          _location = newLocation;
-        });
-      });
+            setState(() {
+              _location = newLocation;
+            });
+          },
+        );
+      }
     });
   }
 
@@ -63,11 +67,16 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
     return Stack(
       children: [
         StateBuilder(
-          observe: () => mapTypeState.getRM,
-          onSetState: (context, mapType) {
-            _layerRebuilder.add(null);
+          observeMany: [
+            () => mapTypeState.getRM,
+            () => locationState.getRM,
+          ],
+          onSetState: (context, model) {
+            if (model is ReactiveModel<MapType>) {
+              _layerRebuilder.add(null);
+            }
           },
-          builder: (context, mapType) {
+          builder: (context, _) {
             return FlutterMap(
               options: MapOptions(
                 center: LatLng(59.002671, 5.754133),
@@ -120,7 +129,7 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
                         borderStrokeWidth: 1,
                         borderColor: navyBlue.withOpacity(0.2),
                         useRadiusInMeter: true,
-                        radius: _accuracy,
+                        radius: locationState.state.accuracy,
                       ),
                   ],
                   rebuild: _layerRebuilder.stream,
@@ -136,7 +145,10 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
                         anchorPos: AnchorPos.align(AnchorAlign.center),
                         builder: (context) {
                           return TweenAnimationBuilder(
-                            tween: Tween(begin: _heading, end: _heading),
+                            tween: Tween(
+                              begin: locationState.state.heading,
+                              end: locationState.state.heading,
+                            ),
                             duration: Duration(milliseconds: 1000),
                             child: SvgPicture.asset('images/boat.svg'),
                             builder: (context, value, child) {
@@ -195,7 +207,7 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
   @override
   void dispose() {
     _layerRebuilder.close();
-    _sub.cancel();
+    _sub();
     super.dispose();
   }
 

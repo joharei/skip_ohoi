@@ -5,8 +5,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/home/ui.dart';
-import 'package:skip_ohoi/state.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 void main() {
   FlutterError.onError = Crashlytics.instance.recordFlutterError;
@@ -26,32 +24,27 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Injector(
-      inject: [Inject(() => MapType.SJOKARTRASTER)],
-      builder: (context) {
-        return MaterialApp(
-          title: 'Skip ohoi!',
-          theme: ThemeData(
-            primaryColor: navyBlue,
-            iconTheme: IconThemeData(color: richBlack),
-            textTheme: Theme.of(context).textTheme.apply(
-                  bodyColor: richBlack,
-                  displayColor: richBlack,
-                ),
-            backgroundColor: nyanza,
-            scaffoldBackgroundColor: nyanza,
-            canvasColor: nyanza,
-            bottomAppBarColor: nyanza,
-            accentColor: coquelicot,
-            buttonColor: nyanza,
-            floatingActionButtonTheme: FloatingActionButtonThemeData(
-              backgroundColor: nyanza,
+    return MaterialApp(
+      title: 'Skip ohoi!',
+      theme: ThemeData(
+        primaryColor: navyBlue,
+        iconTheme: IconThemeData(color: richBlack),
+        textTheme: Theme.of(context).textTheme.apply(
+              bodyColor: richBlack,
+              displayColor: richBlack,
             ),
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-          ),
-          home: MyHomePage(),
-        );
-      },
+        backgroundColor: nyanza,
+        scaffoldBackgroundColor: nyanza,
+        canvasColor: nyanza,
+        bottomAppBarColor: nyanza,
+        accentColor: coquelicot,
+        buttonColor: nyanza,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: nyanza,
+        ),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: MyHomePage(),
     );
   }
 }

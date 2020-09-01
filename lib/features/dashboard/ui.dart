@@ -33,31 +33,42 @@ class Dashboard extends StatelessWidget {
         ),
         locationState.rebuilder(() {
           return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Column(
-                children: [
-                  Text(
-                    'Fart (knop)',
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  Text(
-                    locationState.state.speed.toKnot.toStringAsFixed(1),
-                    style: Theme.of(context).textTheme.headline4,
-                  ),
-                ],
+              Spacer(),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    Text(
+                      'Fart (knop)',
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                    Text(
+                      locationState.state == null
+                          ? ''
+                          : locationState.state.speed.toKnot.toStringAsFixed(1),
+                      style: Theme.of(context).textTheme.headline4,
+                    ),
+                  ],
+                ),
               ),
               // TODO
               // Text('Trip'),
-              Column(
-                children: [
-                  Text('COG', style: Theme.of(context).textTheme.subtitle1),
-                  Text(
-                    '${locationState.state.heading.toStringAsFixed(0)}°',
-                    style: Theme.of(context).textTheme.headline4,
-                  )
-                ],
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    Text('COG', style: Theme.of(context).textTheme.subtitle1),
+                    Text(
+                      locationState.state == null
+                          ? ''
+                          : '${locationState.state.heading.toStringAsFixed(0)}°',
+                      style: Theme.of(context).textTheme.headline4,
+                    )
+                  ],
+                ),
               ),
+              Spacer(),
             ],
           );
         }),

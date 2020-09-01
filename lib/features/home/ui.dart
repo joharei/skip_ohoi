@@ -50,12 +50,35 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Dashboard(),
                 shape: CircularNotchedRectangle(),
               ),
-              floatingActionButton: FloatingActionButton(
-                backgroundColor: Theme.of(context).primaryColor,
-                child: const Icon(Icons.location_searching),
-                onPressed: () {
-                  zoomToLocationState.setState((s) => Zoom());
-                },
+              floatingActionButton: Container(
+                margin: const EdgeInsets.only(bottom: 56),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    mapLockedState.rebuilder(() {
+                      return FloatingActionButton(
+                        heroTag: null,
+                        child: const Icon(Icons.vpn_lock),
+                        foregroundColor: mapLockedState.state
+                            ? Theme.of(context).primaryColor
+                            : null,
+                        onPressed: () {
+                          mapLockedState.setState((s) => !s);
+                        },
+                        mini: true,
+                      );
+                    }),
+                    SizedBox(height: 8),
+                    FloatingActionButton(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: nyanza,
+                      child: const Icon(Icons.location_searching),
+                      onPressed: () {
+                        zoomToLocationState.setState((s) => Zoom());
+                      },
+                    ),
+                  ],
+                ),
               ),
               floatingActionButtonLocation:
                   FloatingActionButtonLocation.endDocked,

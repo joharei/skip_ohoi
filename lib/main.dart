@@ -41,6 +41,7 @@ class MyApp extends StatelessWidget {
         buttonColor: nyanza,
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: nyanza,
+          foregroundColor: richBlack,
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),

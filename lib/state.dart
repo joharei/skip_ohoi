@@ -35,3 +35,5 @@ final locationState = RM.injectStream(
 class Zoom {}
 
 final zoomToLocationState = RM.inject(() => Zoom());
+
+final mapLockedState = RM.inject(() => false);

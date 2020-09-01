@@ -37,26 +37,39 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
     super.initState();
 
     _sub = locationState.getRM.listenToRM((model) {
+      final latLng = LatLng(
+        locationState.state.latitude,
+        locationState.state.longitude,
+      );
+
       if (_location == null) {
         setState(() {
-          _location = LatLng(
-            locationState.state.latitude,
-            locationState.state.longitude,
-          );
+          _location = latLng;
         });
       } else {
         animatedMarkerMove(
           this,
           _location,
-          LatLng(
-            locationState.state.latitude,
-            locationState.state.longitude,
-          ),
+          latLng,
           (newLocation) {
             setState(() {
               _location = newLocation;
             });
           },
+        );
+      }
+      if (mapLockedState.state) {
+        animatedMapMove(
+          _mapController,
+          this,
+          Distance().offset(
+            latLng,
+            Distance().distance(_location, _mapController.center),
+            Distance().bearing(_location, _mapController.center),
+          ),
+          _mapController.zoom,
+          millis: 1000,
+          curve: Curves.linear,
         );
       }
     });

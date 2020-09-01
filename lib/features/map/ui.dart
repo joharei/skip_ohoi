@@ -9,6 +9,7 @@ import 'package:latlong/latlong.dart';
 import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/map/animated_map_move.dart';
 import 'package:skip_ohoi/features/map/animated_marker_move.dart';
+import 'package:skip_ohoi/features/map/degrees_tween.dart';
 import 'package:skip_ohoi/features/map/scalebar/scale_bar_plugin.dart';
 import 'package:skip_ohoi/secrets.dart';
 import 'package:skip_ohoi/state.dart';
@@ -151,7 +152,7 @@ class _MapState extends State<Map> with TickerProviderStateMixin {
                     anchorPos: AnchorPos.align(AnchorAlign.center),
                     builder: (context) {
                       return TweenAnimationBuilder(
-                        tween: Tween(
+                        tween: DegreesTween(
                           begin: locationState.state.heading,
                           end: locationState.state.heading,
                         ),

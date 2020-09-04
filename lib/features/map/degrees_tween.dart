@@ -8,6 +8,9 @@ class DegreesTween extends Tween<double> {
   @override
   double lerp(double t) {
     final diff = end - begin;
-    return begin + (diff.abs() > 180 ? 360 - diff.abs() : diff) * t % 360;
+    return (begin +
+            (diff.abs() > 180 ? (360 - diff.abs()) * diff.sign * -1 : diff) *
+                t) %
+        360;
   }
 }

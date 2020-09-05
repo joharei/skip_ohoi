@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
           if (snapshot.connectionState == ConnectionState.done) {
             return Scaffold(
-              body: Map(),
+              body: MapPage(),
               extendBody: true,
               bottomNavigationBar: BottomAppBar(
                 child: Dashboard(),

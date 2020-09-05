@@ -177,9 +177,11 @@ packages:
   flutter_map:
     dependency: "direct main"
     description:
-      name: flutter_map
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: "12ae8ce1cbe0a9b9bf1f19ba5aebf65685843a0b"
+      resolved-ref: "12ae8ce1cbe0a9b9bf1f19ba5aebf65685843a0b"
+      url: "https://github.com/maRci002/flutter_map.git"
+    source: git
     version: "0.10.1+1"
   flutter_svg:
     dependency: "direct main"

@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
 
-void animatedMapMove(
+Function animatedMapMove(
   MapController mapController,
   TickerProvider vsync,
   LatLng destLocation,
@@ -42,4 +42,11 @@ void animatedMapMove(
   });
 
   controller.forward();
+
+  return () {
+    if (controller.status != AnimationStatus.completed &&
+        controller.status != AnimationStatus.dismissed) {
+      controller.stop();
+    }
+  };
 }

@@ -32,7 +32,10 @@ dependencies:
   firebase_crashlytics: ^0.1.4+1
   firebase_performance: ^0.4.0
   flutter_compass: ^0.4.3
-  flutter_map: ^0.10.1+1
+  flutter_map:
+    git:
+      url: https://github.com/maRci002/flutter_map.git
+      ref: 12ae8ce1cbe0a9b9bf1f19ba5aebf65685843a0b
   flutter_svg: ^0.18.1
   http: ^0.12.2
   international_system_of_units: ^1.0.0-dev.4

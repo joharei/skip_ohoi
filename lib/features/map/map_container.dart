@@ -77,6 +77,13 @@ class _MapContainerState extends State<MapContainer>
     _locationDisposer = locationState.getRM.listenToRM((rm) {
       if (mapLockedState.state && rm.state != null && !_gestureInProgress) {
         _mapLockAnimationCanceller?.call();
+
+        if (widget.location != null &&
+            !_mapController.bounds.contains(widget.location)) {
+          mapLockedState.setState((s) => false);
+          return;
+        }
+
         _mapLockAnimationCanceller = animatedMapMove(
           _mapController,
           this,
@@ -106,12 +113,17 @@ class _MapContainerState extends State<MapContainer>
     return mapLockedState.rebuilder(() {
       return FlutterMap(
         options: MapOptions(
-          center: LatLng(59.002671, 5.754133),
-          zoom: 10.0,
-          maxZoom: mapTypeState.state == MapType.SJOKARTRASTER ? 19 : 18,
-          plugins: [ScaleLayerPlugin()],
-          interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-        ),
+            center: LatLng(59.002671, 5.754133),
+            zoom: 10.0,
+            maxZoom: mapTypeState.state == MapType.SJOKARTRASTER ? 19 : 18,
+            plugins: [ScaleLayerPlugin()],
+            interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+            onPositionChanged: (position, _) {
+              if (widget.location != null &&
+                  !position.bounds.contains(widget.location)) {
+                mapLockedState.setState((s) => false);
+              }
+            }),
         mapController: _mapController,
         layers: [
           if (mapTypeState.state == MapType.ENC &&

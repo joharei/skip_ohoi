@@ -27,7 +27,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.3
+  cupertino_icons: ^1.0.0
   firebase_core: ^0.5.0
   firebase_crashlytics: ^0.1.4+1
   firebase_performance: ^0.4.0
@@ -37,11 +37,7 @@ dependencies:
   http: ^0.12.2
   international_system_of_units: ^1.0.0-dev.4
   location: ^3.0.2
-  states_rebuilder:
-    git:
-      url: https://github.com/GIfatahTH/states_rebuilder.git
-      ref: v-3.0.0
-      path: states_rebuilder_package
+  states_rebuilder: ^3.0.0
 
 dev_dependencies:
   flutter_test:

@@ -42,10 +42,29 @@ class MyApp extends StatelessWidget {
         accentColor: coquelicot,
         buttonColor: nyanza,
         floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: nyanza,
-          foregroundColor: richBlack,
+          backgroundColor: navyBlue,
+          foregroundColor: nyanza,
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            ...Theme.of(context).pageTransitionsTheme.builders,
+            TargetPlatform.android: OpenUpwardsPageTransitionsBuilder(),
+          },
+        ),
+        appBarTheme: AppBarTheme(
+          color: nyanza,
+          brightness: Brightness.light,
+          textTheme: Typography.material2018()
+              .black
+              .merge(Typography.englishLike2018)
+              .apply(
+                bodyColor: richBlack,
+                displayColor: richBlack,
+              ),
+          iconTheme: const IconThemeData(color: richBlack),
+          actionsIconTheme: const IconThemeData(color: richBlack),
+        ),
       ),
       home: MyHomePage(),
     );

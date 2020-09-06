@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong/latlong.dart';
@@ -10,6 +11,9 @@ import 'package:skip_ohoi/features/map/animated_map_move.dart';
 import 'package:skip_ohoi/features/map/degrees_tween.dart';
 import 'package:skip_ohoi/features/map/latlng_tools.dart';
 import 'package:skip_ohoi/features/map/scalebar/scale_bar_plugin.dart';
+import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_options.dart';
+import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_plugin.dart';
+import 'package:skip_ohoi/features/offline_maps/state.dart';
 import 'package:skip_ohoi/state.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:vector_math/vector_math.dart' as vector_math;
@@ -109,21 +113,23 @@ class _MapContainerState extends State<MapContainer>
       observeMany: [
         () => mapLockedState.getRM,
         () => encTokensState.getRM,
+        () => chooseDownloadArea.getRM,
       ],
       builder: (context, _) {
         return FlutterMap(
           options: MapOptions(
-              center: LatLng(59.002671, 5.754133),
-              zoom: 10.0,
-              maxZoom: mapTypeState.state == MapType.SJOKARTRASTER ? 19 : 18,
-              plugins: [ScaleLayerPlugin()],
-              interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-              onPositionChanged: (position, _) {
-                if (widget.location != null &&
-                    !position.bounds.contains(widget.location)) {
-                  mapLockedState.setState((s) => false);
-                }
-              }),
+            center: LatLng(59.002671, 5.754133),
+            zoom: 10.0,
+            maxZoom: mapTypeState.state == MapType.SJOKARTRASTER ? 19 : 18,
+            plugins: [ScaleLayerPlugin(), AreaPickerPlugin()],
+            interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+            onPositionChanged: (position, _) {
+              if (widget.location != null &&
+                  !position.bounds.contains(widget.location)) {
+                mapLockedState.setState((s) => false);
+              }
+            },
+          ),
           mapController: _mapController,
           layers: [
             if (mapTypeState.state == MapType.ENC &&
@@ -203,6 +209,15 @@ class _MapContainerState extends State<MapContainer>
               ],
               rebuild: widget.layerRebuilderStream,
             ),
+            if (chooseDownloadArea.state)
+              AreaPickerLayerOptions(
+                onBoundsChanged: (pixelBounds) {
+                  chosenDownloadBounds.setState((s) => pixelBounds);
+                },
+                color: navyBlue,
+                insets:
+                    EdgeInsets.only(left: 32, top: 32, right: 32, bottom: 48),
+              ),
           ],
           nonRotatedLayers: [
             ScaleLayerPluginOption(
@@ -211,7 +226,7 @@ class _MapContainerState extends State<MapContainer>
               textStyle: TextStyle(color: navyBlue, fontSize: 12),
               padding: EdgeInsets.only(
                 left: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 140,
+                bottom: MediaQuery.of(context).padding.bottom + 35,
               ),
               alignment: Alignment.bottomLeft,
             ),

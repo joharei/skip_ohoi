@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/dashboard/ui.dart';
 import 'package:skip_ohoi/features/map/ui.dart';
+import 'package:skip_ohoi/features/offline_maps/state.dart';
 import 'package:skip_ohoi/state.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -75,36 +76,50 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Dashboard(),
                 shape: CircularNotchedRectangle(),
               ),
-              floatingActionButton: Container(
-                margin: const EdgeInsets.only(bottom: 56),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    mapLockedState.rebuilder(() {
-                      return FloatingActionButton(
-                        heroTag: null,
-                        child: const Icon(Icons.vpn_lock),
-                        foregroundColor: mapLockedState.state
-                            ? Theme.of(context).primaryColor
-                            : null,
+              floatingActionButton: chooseDownloadArea.rebuilder(() {
+                return chooseDownloadArea.state
+                    ? FloatingActionButton(
+                        child: Icon(Icons.done),
                         onPressed: () {
-                          mapLockedState.setState((s) => !s);
+                          chooseDownloadArea.setState((s) => false);
                         },
-                        mini: true,
+                      )
+                    : Container(
+                        margin: const EdgeInsets.only(bottom: 56),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            mapLockedState.rebuilder(() {
+                              return FloatingActionButton(
+                                heroTag: null,
+                                child: const Icon(Icons.vpn_lock),
+                                backgroundColor:
+                                    Theme.of(context).backgroundColor,
+                                foregroundColor: mapLockedState.state
+                                    ? Theme.of(context).primaryColor
+                                    : Theme.of(context)
+                                        .textTheme
+                                        .bodyText2
+                                        .color,
+                                onPressed: () {
+                                  mapLockedState.setState((s) => !s);
+                                },
+                                mini: true,
+                              );
+                            }),
+                            SizedBox(height: 8),
+                            FloatingActionButton(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: nyanza,
+                              child: const Icon(Icons.location_searching),
+                              onPressed: () {
+                                zoomToLocationState.setState((s) => Zoom());
+                              },
+                            ),
+                          ],
+                        ),
                       );
-                    }),
-                    SizedBox(height: 8),
-                    FloatingActionButton(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: nyanza,
-                      child: const Icon(Icons.location_searching),
-                      onPressed: () {
-                        zoomToLocationState.setState((s) => Zoom());
-                      },
-                    ),
-                  ],
-                ),
-              ),
+              }),
               floatingActionButtonLocation:
                   FloatingActionButtonLocation.endDocked,
             );

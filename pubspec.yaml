@@ -40,6 +40,7 @@ dependencies:
   http: ^0.12.2
   international_system_of_units: ^1.0.0-dev.4
   location: ^3.0.2
+  rxdart: ^0.24.1
   states_rebuilder: ^3.0.0
 
 dev_dependencies:

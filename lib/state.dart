@@ -1,5 +1,10 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter_compass/flutter_compass.dart';
+import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:skip_ohoi/secrets.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 enum MapType {
@@ -9,6 +14,48 @@ enum MapType {
 }
 
 final mapTypeState = RM.inject(() => MapType.SJOKARTRASTER);
+
+class EncTokens {
+  final String ticket;
+  final String gkt;
+
+  EncTokens(this.ticket, this.gkt);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EncTokens &&
+          runtimeType == other.runtimeType &&
+          ticket == other.ticket &&
+          gkt == other.gkt;
+
+  @override
+  int get hashCode => ticket.hashCode ^ gkt.hashCode;
+}
+
+final encTokensState = RM.injectComputed<EncTokens>(
+  computeAsync: (s) => mapTypeState.state != MapType.ENC
+      ? Stream.value(null)
+      : Stream.periodic(Duration(seconds: 15))
+          .startWith(null)
+          .asyncMap(
+            (_) => Future.wait([
+              http.get(gateKeeperTicketUrl),
+              http.get(gateKeeperTokenUrl),
+            ]).then(
+              (responses) {
+                String value(String body) =>
+                    RegExp(r'^"(.*)"\W$').firstMatch(body).group(1);
+                return EncTokens(
+                    value(responses[0].body), value(responses[1].body));
+              },
+            ),
+          )
+          .handleError((error) {
+          developer.log('Failed to fetch ENC secrets', error: error);
+        }),
+  asyncDependsOn: [mapTypeState],
+);
 
 final locationState = RM.injectStream(
   // ignore: top_level_function_literal_block

@@ -41,6 +41,16 @@ class MyApp extends StatelessWidget {
         bottomAppBarColor: nyanza,
         accentColor: coquelicot,
         buttonColor: nyanza,
+        colorScheme: ColorScheme.light(
+          primary: navyBlue,
+          onPrimary: nyanza,
+          secondary: coquelicot,
+          onSecondary: nyanza,
+          background: nyanza,
+          onBackground: richBlack,
+          surface: nyanza,
+          onSurface: richBlack,
+        ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: navyBlue,
           foregroundColor: nyanza,

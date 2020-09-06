@@ -7,6 +7,7 @@ import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/dashboard/ui.dart';
 import 'package:skip_ohoi/features/map/ui.dart';
 import 'package:skip_ohoi/features/offline_maps/state.dart';
+import 'package:skip_ohoi/features/offline_maps/ui_options.dart';
 import 'package:skip_ohoi/state.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -69,21 +70,34 @@ class _MyHomePageState extends State<MyHomePage> {
           }
 
           if (snapshot.connectionState == ConnectionState.done) {
-            return Scaffold(
-              body: MapPage(),
-              extendBody: true,
-              bottomNavigationBar: BottomAppBar(
-                child: Dashboard(),
-                shape: CircularNotchedRectangle(),
-              ),
-              floatingActionButton: chooseDownloadArea.rebuilder(() {
-                return chooseDownloadArea.state
-                    ? FloatingActionButton(
-                        child: Icon(Icons.done),
-                        onPressed: () {
-                          chooseDownloadArea.setState((s) => false);
-                        },
+            return chooseDownloadArea.rebuilder(() {
+              return Scaffold(
+                body: chooseDownloadArea.state
+                    ? Stack(
+                        children: [
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                                maxHeight:
+                                    MediaQuery.of(context).size.height - 190),
+                            child: MapPage(),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: ChooseDownloadOptions(),
+                          ),
+                        ],
                       )
+                    : MapPage(),
+                extendBody: true,
+                resizeToAvoidBottomInset: false,
+                bottomNavigationBar: chooseDownloadArea.state
+                    ? null
+                    : BottomAppBar(
+                        child: Dashboard(),
+                        shape: CircularNotchedRectangle(),
+                      ),
+                floatingActionButton: chooseDownloadArea.state
+                    ? null
                     : Container(
                         margin: const EdgeInsets.only(bottom: 56),
                         child: Column(
@@ -118,11 +132,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ],
                         ),
-                      );
-              }),
-              floatingActionButtonLocation:
-                  FloatingActionButtonLocation.endDocked,
-            );
+                      ),
+                floatingActionButtonLocation:
+                    FloatingActionButtonLocation.endDocked,
+              );
+            });
           }
           return Scaffold(
             backgroundColor: navyBlue,

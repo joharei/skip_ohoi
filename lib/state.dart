@@ -57,26 +57,29 @@ final encTokensState = RM.injectComputed<EncTokens>(
   asyncDependsOn: [mapTypeState],
 );
 
-final locationState = RM.injectStream(
-  // ignore: top_level_function_literal_block
-  () => Location().onLocationChanged.asyncMap((locationData) async {
-    if (locationData.speed < 1) {
-      final compassHeading = await FlutterCompass.events.first;
-      return LocationData.fromMap({
-        'latitude': locationData.latitude,
-        'longitude': locationData.longitude,
-        'accuracy': locationData.accuracy,
-        'altitude': locationData.altitude,
-        'speed': locationData.speed,
-        'speed_accuracy': locationData.speedAccuracy,
-        'heading': compassHeading ?? 0,
-        'time': locationData.time,
-      });
-    }
-    return locationData;
-  }),
-  onInitialized: (_) =>
+final locationState = RM.injectStream<LocationData>(
+  () => Rx.concat([
+    Stream.fromFutures([
       Location().changeSettings(accuracy: LocationAccuracy.high, interval: 500),
+      Location().requestPermission(),
+    ]).map((_) => null),
+    Location().onLocationChanged.asyncMap((locationData) async {
+      if (locationData.speed < 1) {
+        final compassHeading = await FlutterCompass.events.first;
+        return LocationData.fromMap({
+          'latitude': locationData.latitude,
+          'longitude': locationData.longitude,
+          'accuracy': locationData.accuracy,
+          'altitude': locationData.altitude,
+          'speed': locationData.speed,
+          'speed_accuracy': locationData.speedAccuracy,
+          'heading': compassHeading ?? 0,
+          'time': locationData.time,
+        });
+      }
+      return locationData;
+    }),
+  ]),
 );
 
 class Zoom {}

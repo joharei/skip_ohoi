@@ -39,6 +39,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Skip Ohoi needs your permission to display your location when the app is in use</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Skip Ohoi needs your permission to get your location even if the app is not in use</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>

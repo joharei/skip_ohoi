@@ -7,18 +7,20 @@ import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/home/ui.dart';
 
 void main() {
-  FlutterError.onError = Crashlytics.instance.recordFlutterError;
+  WidgetsFlutterBinding.ensureInitialized();
   Isolate.current.addErrorListener(RawReceivePort((pair) async {
     final List<dynamic> errorAndStacktrace = pair;
-    await Crashlytics.instance.recordError(
+    await FirebaseCrashlytics.instance.recordError(
       errorAndStacktrace.first,
       errorAndStacktrace.last,
     );
   }).sendPort);
-
-  runZoned(() {
+  runZonedGuarded(() {
     runApp(MyApp());
-  }, onError: Crashlytics.instance.recordError);
+  }, (error, stackTrace) {
+    print('runZonedGuarded: Caught error in my root zone.');
+    FirebaseCrashlytics.instance.recordError(error, stackTrace);
+  });
 }
 
 class MyApp extends StatelessWidget {

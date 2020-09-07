@@ -1,4 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:skip_ohoi/colors.dart';
@@ -12,7 +14,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _initialization = Firebase.initializeApp();
+  Future<void> _initializeFlutterFireFuture;
+
+  // Define an async function to initialize FlutterFire
+  Future<void> _initializeFlutterFire() async {
+    // Wait for Firebase to initialize
+    await Firebase.initializeApp();
+
+    await FirebaseCrashlytics.instance
+        .setCrashlyticsCollectionEnabled(!kDebugMode);
+
+    // Pass all uncaught errors to Crashlytics.
+    Function originalOnError = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails errorDetails) async {
+      await FirebaseCrashlytics.instance.recordFlutterError(errorDetails);
+      // Forward to original handler.
+      originalOnError(errorDetails);
+    };
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFlutterFireFuture = _initializeFlutterFire();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 : Brightness.light,
       ),
       child: FutureBuilder(
-        future: _initialization,
+        future: _initializeFlutterFireFuture,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Scaffold(
@@ -86,9 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
           }
           return Scaffold(
             backgroundColor: navyBlue,
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
           );
         },
       ),

@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
 import 'package:skip_ohoi/features/map/latlng_tools.dart';
 import 'package:skip_ohoi/features/map/map_container.dart';
+import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/state.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 

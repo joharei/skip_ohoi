@@ -4,14 +4,9 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/secrets.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
-
-enum MapType {
-  ENC,
-  SJOKARTRASTER,
-  ENIRO,
-}
 
 final mapTypeState = RM.inject(() => MapType.SJOKARTRASTER);
 

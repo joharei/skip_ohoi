@@ -14,6 +14,7 @@ import 'package:skip_ohoi/features/map/scalebar/scale_bar_plugin.dart';
 import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_options.dart';
 import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_plugin.dart';
 import 'package:skip_ohoi/features/offline_maps/state.dart';
+import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/state.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:vector_math/vector_math.dart' as vector_math;
@@ -114,6 +115,7 @@ class _MapContainerState extends State<MapContainer>
         () => mapLockedState.getRM,
         () => encTokensState.getRM,
         () => chooseDownloadArea.getRM,
+        () => applicationDirectoryState.getRM,
       ],
       builder: (context, _) {
         return FlutterMap(
@@ -132,40 +134,24 @@ class _MapContainerState extends State<MapContainer>
           ),
           mapController: _mapController,
           layers: [
-            if (mapTypeState.state == MapType.ENC &&
-                encTokensState.state != null)
+            if (applicationDirectoryState.state != null)
               TileLayerOptions(
-                wmsOptions: WMSTileLayerOptions(
-                  baseUrl:
-                      'https://wms.geonorge.no/skwms1/wms.ecc_enc?ticket={ticket}&gkt={gkt}',
-                  layers: ['cells'],
-                  styles: ['style-id-260'],
-                ),
-                additionalOptions: {
-                  'ticket': encTokensState.state.ticket,
-                  'gkt': encTokensState.state.gkt,
-                },
+                urlTemplate:
+                    '${applicationDirectoryState.state}/offline_map/{z}/{x}/{y}.png',
+                tileProvider: FileTileProvider(),
                 errorTileCallback: (tile, error) {
-                  developer.log('Failed to load WMS tile: ${tile.toString()}',
-                      error: error);
+                  developer.log(
+                    'Failed to load offline tile: ${tile.toString()}',
+                    error: error,
+                  );
                 },
                 rebuild: widget.layerRebuilderStream,
-              ),
-            if (mapTypeState.state == MapType.SJOKARTRASTER)
-              TileLayerOptions(
-                urlTemplate:
-                    'https://opencache{s}.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=sjokartraster&zoom={z}&x={x}&y={y}',
-                subdomains: ['', '2', '3'],
-                rebuild: widget.layerRebuilderStream,
-              ),
-            if (mapTypeState.state == MapType.ENIRO)
-              TileLayerOptions(
-                urlTemplate:
-                    'http://map0{s}.eniro.no/geowebcache/service/tms1.0.0/nautical/{z}/{x}/{y}.png',
-                subdomains: ['1', '2', '3', '4'],
-                tms: true,
-                rebuild: widget.layerRebuilderStream,
-              ),
+              )
+            else if (mapTypeState.state == MapType.ENC &&
+                encTokensState.state != null)
+              MapType.ENC.options(widget.layerRebuilderStream)
+            else
+              mapTypeState.state.options(widget.layerRebuilderStream),
             CircleLayerOptions(
               circles: [
                 if (widget.location != null)
@@ -211,8 +197,8 @@ class _MapContainerState extends State<MapContainer>
             ),
             if (chooseDownloadArea.state)
               AreaPickerLayerOptions(
-                onBoundsChanged: (pixelBounds) {
-                  chosenDownloadBounds.setState((s) => pixelBounds);
+                onAreaChanged: (state) {
+                  areaPickerState.setState((s) => state);
                 },
                 color: navyBlue,
                 insets:

@@ -1,5 +1,11 @@
+import 'dart:async';
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/features/offline_maps/state.dart';
+import 'package:skip_ohoi/features/offline_maps/tile_downloader.dart';
+import 'package:skip_ohoi/map_types.dart';
+import 'package:skip_ohoi/state.dart';
 
 class ChooseDownloadOptions extends StatefulWidget {
   @override
@@ -9,6 +15,7 @@ class ChooseDownloadOptions extends StatefulWidget {
 class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
   String _name = '';
   RangeValues _rangeValues = RangeValues(0, 19);
+  StreamSubscription _sub;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +81,20 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                     ),
                     Expanded(
                       child: FlatButton(
-                        onPressed: _name.isEmpty ? null : () {},
+                        onPressed: _name.isEmpty
+                            ? null
+                            : () {
+                                developer.log('Starting download...');
+                                _sub?.cancel();
+                                _sub = downloadMapArea(
+                                  mapTypeState.state.options(),
+                                  areaPickerState.state,
+                                  _rangeValues.start,
+                                  _rangeValues.end,
+                                ).listen((event) {
+                                  developer.log('Got progress event: $event');
+                                });
+                              },
                         textColor: Theme.of(context).primaryColor,
                         child: Text('LAST NED'),
                       ),
@@ -87,5 +107,11 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 }

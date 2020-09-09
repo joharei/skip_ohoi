@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 
 import 'area_picker_options.dart';
@@ -31,9 +29,14 @@ class _AreaPickerLayerState extends State<AreaPickerLayer> {
     final setBounds = () {
       RenderBox box = _areaKey.currentContext.findRenderObject();
       var topLeft = box.localToGlobal(Offset.zero);
-      var bounds = _pxBoundsToTileRange(
-          _getBounds(topLeft.dx, topLeft.dy, box.size.width, box.size.height));
-      widget.options.onBoundsChanged(bounds);
+      widget.options.onAreaChanged(AreaPickerState(
+        topLeft.dx,
+        topLeft.dy,
+        box.size.width,
+        box.size.height,
+        widget.map.zoom,
+        widget.map.center,
+      ));
     };
     _onMovedSub = widget.map.onMoved.listen((_) {
       setBounds();
@@ -47,46 +50,6 @@ class _AreaPickerLayerState extends State<AreaPickerLayer> {
   void dispose() {
     _onMovedSub?.cancel();
     super.dispose();
-  }
-
-  Bounds _pxBoundsToTileRange(Bounds bounds) {
-    var tileSize = CustomPoint(256.0, 256.0);
-    return Bounds(
-      bounds.min.unscaleBy(tileSize).floor(),
-      bounds.max.unscaleBy(tileSize).ceil() - CustomPoint(1, 1),
-    );
-  }
-
-  Bounds _getBounds(double xPos, double yPos, double width, double height) {
-    var sX = xPos + width;
-    var sY = yPos + height;
-
-    final offsetNo = Offset(xPos, yPos);
-    final offsetSs = Offset(sX, sY);
-
-    var nO = _offsetToPoint2(offsetNo);
-    var sE = _offsetToPoint2(offsetSs);
-
-    return Bounds(nO, sE);
-  }
-
-  Point _offsetToPoint2(Offset offset) {
-    // Get the widget's offset
-    var renderObject = context.findRenderObject() as RenderBox;
-    var width = renderObject.size.width;
-    var height = renderObject.size.height;
-
-    // convert the point to global coordinates
-    var localPoint = _offsetToPoint(offset);
-    var localPointCenterDistance =
-        CustomPoint((width / 2) - localPoint.x, (height / 2) - localPoint.y);
-    var mapCenter = widget.map.project(widget.map.center);
-    var point = mapCenter - localPointCenterDistance;
-    return point;
-  }
-
-  CustomPoint _offsetToPoint(Offset offset) {
-    return CustomPoint(offset.dx, offset.dy);
   }
 
   @override

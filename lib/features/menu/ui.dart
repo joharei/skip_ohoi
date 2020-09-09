@@ -1,24 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/features/offline_maps/ui.dart';
+import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/state.dart';
-
-const _mapTypes = [
-  {
-    'mapType': MapType.ENC,
-    'image': 'images/preview_enc.png',
-    'text': 'Elektronisk',
-  },
-  {
-    'mapType': MapType.SJOKARTRASTER,
-    'image': 'images/preview_sjokartraster.png',
-    'text': 'Raster',
-  },
-  {
-    'mapType': MapType.ENIRO,
-    'image': 'images/preview_eniro.png',
-    'text': 'Eniro',
-  }
-];
 
 class Menu extends StatelessWidget {
   @override
@@ -56,12 +39,11 @@ class Menu extends StatelessWidget {
           mapTypeState.rebuilder(() {
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: _mapTypes.map((mapType) {
-                final active = mapType['mapType'] == mapTypeState.state;
+              children: MapType.values.map((mapType) {
+                final active = mapType == mapTypeState.state;
                 return InkResponse(
                   radius: 70,
-                  onTap: () =>
-                      mapTypeState.setState((state) => mapType['mapType']),
+                  onTap: () => mapTypeState.setState((state) => mapType),
                   child: Column(
                     children: [
                       Container(
@@ -77,13 +59,13 @@ class Menu extends StatelessWidget {
                           ),
                           image: DecorationImage(
                             fit: BoxFit.cover,
-                            image: AssetImage(mapType['image']),
+                            image: AssetImage(mapType.imageAsset),
                           ),
                         ),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        mapType['text'],
+                        mapType.text,
                         style: Theme.of(context).textTheme.caption.copyWith(
                               color: active
                                   ? Theme.of(context).primaryColor

@@ -24,6 +24,7 @@ class AreaPickerState {
     this.height,
     this.zoom,
     this.mapCenter,
+    this.bounds,
   );
 
   final double xPos;
@@ -32,6 +33,7 @@ class AreaPickerState {
   final double height;
   final double zoom;
   final LatLng mapCenter;
+  final LatLngBounds bounds;
 
   @override
   bool operator ==(Object other) =>
@@ -43,7 +45,8 @@ class AreaPickerState {
           width == other.width &&
           height == other.height &&
           zoom == other.zoom &&
-          mapCenter == other.mapCenter;
+          mapCenter == other.mapCenter &&
+          bounds == other.bounds;
 
   @override
   int get hashCode =>
@@ -52,5 +55,6 @@ class AreaPickerState {
       width.hashCode ^
       height.hashCode ^
       zoom.hashCode ^
-      mapCenter.hashCode;
+      mapCenter.hashCode ^
+      bounds.hashCode;
 }

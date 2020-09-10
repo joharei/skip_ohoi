@@ -250,7 +250,7 @@ packages:
     source: hosted
     version: "0.6.2"
   latlong:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: latlong
       url: "https://pub.dartlang.org"
@@ -432,7 +432,7 @@ packages:
     source: hosted
     version: "1.0.5"
   quiver:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: quiver
       url: "https://pub.dartlang.org"

@@ -134,7 +134,7 @@ class _MapContainerState extends State<MapContainer>
           ),
           mapController: _mapController,
           layers: [
-            if (applicationDirectoryState.state != null)
+            if (false)
               TileLayerOptions(
                 urlTemplate:
                     '${applicationDirectoryState.state}/offline_map/{z}/{x}/{y}.png',
@@ -150,7 +150,7 @@ class _MapContainerState extends State<MapContainer>
             else if (mapTypeState.state == MapType.ENC &&
                 encTokensState.state != null)
               MapType.ENC.options(widget.layerRebuilderStream)
-            else
+            else if (mapTypeState.state != MapType.ENC)
               mapTypeState.state.options(widget.layerRebuilderStream),
             CircleLayerOptions(
               circles: [

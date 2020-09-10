@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:latlong/latlong.dart';
 
 import 'area_picker_options.dart';
 
@@ -22,6 +23,37 @@ class _AreaPickerLayerState extends State<AreaPickerLayer> {
 
   final _areaKey = GlobalKey();
 
+  LatLng _offsetToCrs(Offset offset) {
+    var renderObject = context.findRenderObject() as RenderBox;
+    var width = renderObject.size.width;
+    var height = renderObject.size.height;
+    var localPoint = _offsetToPoint(offset);
+    var localPointCenterDistance =
+        CustomPoint((width / 2) - localPoint.x, (height / 2) - localPoint.y);
+    var mapCenter = widget.map.project(widget.map.center);
+    var point = mapCenter - localPointCenterDistance;
+    return widget.map.unproject(point);
+  }
+
+  CustomPoint _offsetToPoint(Offset offset) {
+    return CustomPoint(offset.dx, offset.dy);
+  }
+
+  LatLngBounds _getLatLngBoundsFromScreen(
+    double xPos,
+    double yPos,
+    double width,
+    double height,
+  ) {
+    var sX = xPos + width;
+    var sY = yPos + height;
+
+    final offsetN = Offset(xPos, yPos);
+    final offsetS = Offset(sX, sY);
+
+    return LatLngBounds(_offsetToCrs(offsetN), _offsetToCrs(offsetS));
+  }
+
   @override
   initState() {
     super.initState();
@@ -36,6 +68,8 @@ class _AreaPickerLayerState extends State<AreaPickerLayer> {
         box.size.height,
         widget.map.zoom,
         widget.map.center,
+        _getLatLngBoundsFromScreen(
+            topLeft.dx, topLeft.dy, box.size.width, box.size.height),
       ));
     };
     _onMovedSub = widget.map.onMoved.listen((_) {

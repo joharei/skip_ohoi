@@ -74,4 +74,16 @@ extension MapTypeExtension on MapType {
         return 'Eniro';
     }
   }
+
+  // ignore: missing_return
+  String get key {
+    switch (this) {
+      case MapType.ENC:
+        return 'enc';
+      case MapType.SJOKARTRASTER:
+        return 'sjokartraster';
+      case MapType.ENIRO:
+        return 'eniro';
+    }
+  }
 }

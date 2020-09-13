@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_options.dart';
 import 'package:skip_ohoi/features/offline_maps/mercantile.dart';
+import 'package:skip_ohoi/map_types.dart';
 
 Future<void> _downloadFile(String url, String filename, String dir) async {
   // TODO: ensure ENC tiles are downloaded correctly
@@ -35,7 +36,7 @@ Stream<Null> _downloadTiles(
       (coords) async {
         String url = options.tileProvider.getTileUrl(coords, options);
         final dirName =
-            '$dir/offline_map/${coords.z.round().toString()}/${coords.x.round().toString()}';
+            '$dir/${coords.z.round().toString()}/${coords.x.round().toString()}';
         await Directory(dirName).create(recursive: true);
         await _downloadFile(url, '${coords.y.round().toString()}.png', dirName);
       },
@@ -44,14 +45,15 @@ Stream<Null> _downloadTiles(
 }
 
 Stream<int> downloadMapArea(
-  TileLayerOptions options,
+  MapType mapType,
   AreaPickerState area,
   double minZoom,
   double maxZoom,
 ) async* {
   developer.log('Requesting permission', name: 'tile_downloader');
   if (await Permission.storage.request().isGranted) {
-    var dir = (await getApplicationDocumentsDirectory()).path;
+    final dir =
+        '${(await getApplicationDocumentsDirectory()).path}/offline_maps/${mapType.key}';
 
     yield 0;
     developer.log('Starting');
@@ -73,7 +75,7 @@ Stream<int> downloadMapArea(
     developer.log('Downloading $total tiles to directory: $dir');
     var progress = 0;
     yield* _downloadTiles(
-      options,
+      mapType.options(),
       tileIds
           .map((tileId) => Coords(tileId.x.toDouble(), tileId.y.toDouble())
             ..z = tileId.z.toDouble())

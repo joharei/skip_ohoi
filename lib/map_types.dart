@@ -1,7 +1,6 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter_map/flutter_map.dart';
-import 'package:skip_ohoi/state.dart';
 
 enum MapType {
   ENC,
@@ -11,7 +10,7 @@ enum MapType {
 
 extension MapTypeExtension on MapType {
   // ignore: missing_return
-  TileLayerOptions options([Stream rebuild]) {
+  TileLayerOptions options({Stream rebuild, String encTicket, String encGkt}) {
     switch (this) {
       case MapType.ENC:
         return TileLayerOptions(
@@ -22,8 +21,8 @@ extension MapTypeExtension on MapType {
             styles: ['style-id-260'],
           ),
           additionalOptions: {
-            'ticket': encTokensState.state.ticket,
-            'gkt': encTokensState.state.gkt,
+            'ticket': encTicket,
+            'gkt': encGkt,
           },
           errorTileCallback: (tile, error) {
             developer.log(

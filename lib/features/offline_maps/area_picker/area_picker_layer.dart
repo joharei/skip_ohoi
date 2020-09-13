@@ -62,12 +62,6 @@ class _AreaPickerLayerState extends State<AreaPickerLayer> {
       RenderBox box = _areaKey.currentContext.findRenderObject();
       var topLeft = box.localToGlobal(Offset.zero);
       widget.options.onAreaChanged(AreaPickerState(
-        topLeft.dx,
-        topLeft.dy,
-        box.size.width,
-        box.size.height,
-        widget.map.zoom,
-        widget.map.center,
         _getLatLngBoundsFromScreen(
             topLeft.dx, topLeft.dy, box.size.width, box.size.height),
       ));

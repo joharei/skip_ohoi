@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 
@@ -6,14 +7,22 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_options.dart';
 import 'package:skip_ohoi/features/offline_maps/mercantile.dart';
 import 'package:skip_ohoi/map_types.dart';
+import 'package:skip_ohoi/service.dart';
+import 'package:tuple/tuple.dart';
 
 Future<void> _downloadFile(String url, String filename, String dir) async {
-  // TODO: ensure ENC tiles are downloaded correctly
   var req = await http.Client().get(Uri.parse(url));
+
+  if (req.statusCode != 200 || req.body.contains('<?xml')) {
+    developer.log('Unexpected XML response', error: req.body);
+    throw 'Unexpected XML response';
+  }
+
+  await Directory(dir).create(recursive: true);
   var file = File('$dir/$filename');
   await file.writeAsBytes(req.bodyBytes);
 }
@@ -26,61 +35,96 @@ Stream<List<T>> _chunk<T>(List<T> list, int chunkSize) async* {
   }
 }
 
-Stream<Null> _downloadTiles(
-  TileLayerOptions options,
+Stream _downloadTiles(
+  MapType mapType,
   List<Coords<double>> queue,
   String dir,
-) {
-  return _chunk(queue, 5).asyncExpand(
-    (taskChunk) => Stream.fromIterable(taskChunk).asyncMap(
-      (coords) async {
-        String url = options.tileProvider.getTileUrl(coords, options);
-        final dirName =
-            '$dir/${coords.z.round().toString()}/${coords.x.round().toString()}';
-        await Directory(dirName).create(recursive: true);
-        await _downloadFile(url, '${coords.y.round().toString()}.png', dirName);
-      },
-    ),
+) async* {
+  final firstTokens = await encTokensRefresher(mapType).first;
+  final tokensRefresher = encTokensRefresher(mapType)
+      .asBroadcastStream(onCancel: (subscription) => subscription.cancel());
+  yield* _chunk(queue, 5).asyncExpand(
+    (taskChunk) => Stream.fromIterable(taskChunk)
+        .withLatestFrom(tokensRefresher.startWith(firstTokens),
+            (coords, EncTokens tokens) => Tuple2(coords, tokens))
+        .asyncExpand(
+          (tuple) => Rx.retry(
+            () {
+              final options = mapType.options(
+                encTicket: tuple.item2?.ticket,
+                encGkt: tuple.item2?.gkt,
+              );
+              String url =
+                  options.tileProvider.getTileUrl(tuple.item1, options);
+              final dirName =
+                  '$dir/${tuple.item1.z.round().toString()}/${tuple.item1.x.round().toString()}';
+              return Stream.fromFuture(
+                _downloadFile(
+                  url,
+                  '${tuple.item1.y.round().toString()}.png',
+                  dirName,
+                ),
+              );
+            },
+          ),
+        ),
   );
 }
 
-Stream<int> downloadMapArea(
+Future<void> downloadMapArea(
   MapType mapType,
   AreaPickerState area,
   double minZoom,
   double maxZoom,
-) async* {
-  developer.log('Requesting permission', name: 'tile_downloader');
-  if (await Permission.storage.request().isGranted) {
-    final dir =
-        '${(await getApplicationDocumentsDirectory()).path}/offline_maps/${mapType.key}';
+) async {
+  final dir =
+      '${(await getApplicationSupportDirectory()).path}/offline_maps/${mapType.key}';
 
-    yield 0;
-    developer.log('Starting');
+  developer.log('Starting');
 
-    final zooms = List.generate(
-      (maxZoom - minZoom + 1).toInt(),
-      (index) => minZoom.toInt() + index,
-    );
-    final tileIds = tiles(
-      area.bounds.west,
-      area.bounds.south,
-      area.bounds.east,
-      area.bounds.north,
-      zooms,
-    );
+  final zooms = List.generate(
+    (maxZoom - minZoom + 1).toInt(),
+    (index) => minZoom.toInt() + index,
+  );
+  final tileIds = tiles(
+    area.bounds.west,
+    area.bounds.south,
+    area.bounds.east,
+    area.bounds.north,
+    zooms,
+  );
 
-    // TODO: skip files that are already downloaded
-    final total = tileIds.length;
-    developer.log('Downloading $total tiles to directory: $dir');
-    var progress = 0;
-    yield* _downloadTiles(
-      mapType.options(),
-      tileIds
-          .map((tileId) => Coords(tileId.x.toDouble(), tileId.y.toDouble())
-            ..z = tileId.z.toDouble())
-          .toList(),
-      dir,
-    ).map((_) => (++progress / total.toDouble() * 100).round());
-  }
+  final existingFiles = await Directory(dir)
+      .list(recursive: true)
+      .whereType<File>()
+      .map((file) => file.path)
+      .toList();
+  final missingTiles = tileIds.where((tile) =>
+      !existingFiles.contains('$dir/${tile.z}/${tile.x}/${tile.y}.png'));
+
+  final total = tileIds.length;
+  developer.log(
+      'Downloading ${missingTiles.length} out of $total tiles to directory: $dir');
+  var progress = total - missingTiles.length;
+  await _downloadTiles(
+    mapType,
+    missingTiles
+        .map((tileId) => Coords(tileId.x.toDouble(), tileId.y.toDouble())
+          ..z = tileId.z.toDouble())
+        .toList(),
+    dir,
+  ).asyncMap((_) async {
+    await File('$dir/download_status.json').writeAsString(jsonEncode({
+      'filesDownloaded': ++progress,
+      'total': total,
+      'minZoom': minZoom,
+      'maxZoom': maxZoom,
+      'bounds': {
+        'west': area.bounds.west,
+        'south': area.bounds.south,
+        'east': area.bounds.east,
+        'north': area.bounds.north,
+      },
+    }));
+  }).drain();
 }

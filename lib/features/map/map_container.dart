@@ -149,9 +149,13 @@ class _MapContainerState extends State<MapContainer>
               )
             else if (mapTypeState.state == MapType.ENC &&
                 encTokensState.state != null)
-              MapType.ENC.options(widget.layerRebuilderStream)
+              MapType.ENC.options(
+                rebuild: widget.layerRebuilderStream,
+                encTicket: encTokensState.state.ticket,
+                encGkt: encTokensState.state.gkt,
+              )
             else if (mapTypeState.state != MapType.ENC)
-              mapTypeState.state.options(widget.layerRebuilderStream),
+              mapTypeState.state.options(rebuild: widget.layerRebuilderStream),
             CircleLayerOptions(
               circles: [
                 if (widget.location != null)

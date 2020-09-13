@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ class ChooseDownloadOptions extends StatefulWidget {
 
 class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
   RangeValues _rangeValues = RangeValues(0, 19);
-  StreamSubscription _sub;
 
   @override
   Widget build(BuildContext context) {
@@ -68,15 +66,12 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                       child: FlatButton(
                         onPressed: () {
                           developer.log('Starting download...');
-                          _sub?.cancel();
-                          _sub = downloadMapArea(
+                          downloadMapArea(
                             mapTypeState.state,
                             areaPickerState.state,
                             _rangeValues.start,
                             _rangeValues.end,
-                          ).listen((event) {
-                            developer.log('Got progress event: $event');
-                          });
+                          );
                         },
                         textColor: Theme.of(context).primaryColor,
                         child: Text('LAST NED'),
@@ -90,11 +85,5 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
   }
 }

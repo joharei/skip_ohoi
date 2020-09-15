@@ -115,14 +115,18 @@ class _MapContainerState extends State<MapContainer>
         () => mapLockedState.getRM,
         () => encTokensState.getRM,
         () => chooseDownloadArea.getRM,
-        () => applicationDirectoryState.getRM,
+        () => offlineTilesState.getRM,
       ],
       builder: (context, _) {
         return FlutterMap(
           options: MapOptions(
             center: LatLng(59.002671, 5.754133),
             zoom: 10.0,
-            maxZoom: mapTypeState.state == MapType.SJOKARTRASTER ? 19 : 18,
+            maxZoom: 18,
+            // minZoom: offlineTilesState.state?.minZoom,
+            // nePanBoundary: offlineTilesState.state?.bounds?.northEast,
+            // swPanBoundary: offlineTilesState.state?.bounds?.southWest,
+            // slideOnBoundaries: true,
             plugins: [ScaleLayerPlugin(), AreaPickerPlugin()],
             interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
             onPositionChanged: (position, _) {
@@ -134,10 +138,11 @@ class _MapContainerState extends State<MapContainer>
           ),
           mapController: _mapController,
           layers: [
-            if (false)
+            if (offlineTilesState.state != null)
               TileLayerOptions(
-                urlTemplate:
-                    '${applicationDirectoryState.state}/offline_map/{z}/{x}/{y}.png',
+                urlTemplate: '${offlineTilesState.state.path}/{z}/{x}/{y}.png',
+                maxZoom: offlineTilesState.state.maxZoom,
+                minZoom: offlineTilesState.state.minZoom,
                 tileProvider: FileTileProvider(),
                 errorTileCallback: (tile, error) {
                   developer.log(
@@ -146,19 +151,21 @@ class _MapContainerState extends State<MapContainer>
                   );
                 },
                 rebuild: widget.layerRebuilderStream,
-              )
-            else if (mapTypeState.state == MapType.ENC &&
-                encTokensState.state != null)
-              MapType.ENC.options(
-                rebuild: widget.layerRebuilderStream,
-                encTicket: encTokensState.state.ticket,
-                encGkt: encTokensState.state.gkt,
-              )
-            else if (mapTypeState.state != MapType.ENC)
-              mapTypeState.state.options(rebuild: widget.layerRebuilderStream),
-            CircleLayerOptions(
-              circles: [
-                if (widget.location != null)
+              ),
+            if (isOnlineState.state)
+              if (mapTypeState.state == MapType.ENC &&
+                  encTokensState.state != null)
+                MapType.ENC.options(
+                  rebuild: widget.layerRebuilderStream,
+                  encTicket: encTokensState.state.ticket,
+                  encGkt: encTokensState.state.gkt,
+                )
+              else if (mapTypeState.state != MapType.ENC)
+                mapTypeState.state
+                    .options(rebuild: widget.layerRebuilderStream),
+            if (widget.location != null)
+              CircleLayerOptions(
+                circles: [
                   CircleMarker(
                     point: widget.location,
                     color: navyBlue.withOpacity(0.1),
@@ -167,9 +174,9 @@ class _MapContainerState extends State<MapContainer>
                     useRadiusInMeter: true,
                     radius: locationState.state.accuracy,
                   ),
-              ],
-              rebuild: widget.layerRebuilderStream,
-            ),
+                ],
+                rebuild: widget.layerRebuilderStream,
+              ),
             MarkerLayerOptions(
               markers: [
                 ...widget.markers,
@@ -216,7 +223,9 @@ class _MapContainerState extends State<MapContainer>
               textStyle: TextStyle(color: navyBlue, fontSize: 12),
               padding: EdgeInsets.only(
                 left: 16,
-                bottom: MediaQuery.of(context).padding.bottom + 35,
+                bottom: chooseDownloadArea.state
+                    ? 35
+                    : MediaQuery.of(context).padding.bottom + 35,
               ),
               alignment: Alignment.bottomLeft,
             ),

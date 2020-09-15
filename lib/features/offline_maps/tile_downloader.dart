@@ -94,7 +94,7 @@ Future<void> downloadMapArea(
     zooms,
   );
 
-  final existingFiles = await Directory(dir)
+  final existingFiles = await (await Directory(dir).create(recursive: true))
       .list(recursive: true)
       .whereType<File>()
       .map((file) => file.path)

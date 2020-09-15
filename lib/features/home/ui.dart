@@ -73,18 +73,10 @@ class _MyHomePageState extends State<MyHomePage> {
             return chooseDownloadArea.rebuilder(() {
               return Scaffold(
                 body: chooseDownloadArea.state
-                    ? Stack(
+                    ? Column(
                         children: [
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                                maxHeight:
-                                    MediaQuery.of(context).size.height - 190),
-                            child: MapPage(),
-                          ),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: ChooseDownloadOptions(),
-                          ),
+                          Expanded(child: MapPage()),
+                          ChooseDownloadOptions(),
                         ],
                       )
                     : MapPage(),

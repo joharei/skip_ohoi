@@ -1,3 +1,4 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:location/location.dart';
 import 'package:rxdart/rxdart.dart';
@@ -42,3 +43,10 @@ class Zoom {}
 final zoomToLocationState = RM.inject(() => Zoom());
 
 final mapLockedState = RM.inject(() => false);
+
+final isOnlineState = RM.injectStream<bool>(
+  () => Connectivity()
+      .onConnectivityChanged
+      .map((event) => event != ConnectivityResult.none),
+  initialValue: true,
+);

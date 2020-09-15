@@ -85,4 +85,17 @@ extension MapTypeExtension on MapType {
         return 'eniro';
     }
   }
+
+  static MapType parse(String key) {
+    switch (key) {
+      case 'enc':
+        return MapType.ENC;
+      case 'sjokartraster':
+        return MapType.SJOKARTRASTER;
+      case 'eniro':
+        return MapType.ENIRO;
+      default:
+        throw 'Invalid MapType key';
+    }
+  }
 }

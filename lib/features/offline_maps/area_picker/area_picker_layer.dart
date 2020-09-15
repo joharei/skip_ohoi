@@ -97,8 +97,7 @@ class _AreaPickerLayerState extends State<AreaPickerLayer> {
           ),
           bottom: BorderSide(
             color: widget.options.color.withOpacity(.3),
-            width: widget.options.insets.bottom +
-                MediaQuery.of(context).padding.bottom,
+            width: widget.options.insets.bottom,
           ),
           left: BorderSide(
             color: widget.options.color.withOpacity(.3),

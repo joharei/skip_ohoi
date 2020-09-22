@@ -61,10 +61,10 @@ class _AreaPickerLayerState extends State<AreaPickerLayer> {
     final setBounds = () {
       RenderBox box = _areaKey.currentContext.findRenderObject();
       var topLeft = box.localToGlobal(Offset.zero);
-      widget.options.onAreaChanged(AreaPickerState(
+      widget.options.onAreaChanged(
         _getLatLngBoundsFromScreen(
             topLeft.dx, topLeft.dy, box.size.width, box.size.height),
-      ));
+      );
     };
     _onMovedSub = widget.map.onMoved.listen((_) {
       setBounds();

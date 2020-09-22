@@ -1,5 +1,7 @@
 import UIKit
 import Flutter
+import flt_worker
+import path_provider
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -8,6 +10,13 @@ import Flutter
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+    
+    FltWorkerPlugin.registerPlugins = { registry in
+        if let registrar = registry?.registrar(forPlugin: "FLTPathProviderPlugin") {
+            FLTPathProviderPlugin.register(with: registrar)
+        }
+    }
+    
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

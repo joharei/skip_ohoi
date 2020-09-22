@@ -6,7 +6,6 @@ import 'package:latlong/latlong.dart';
 import 'package:path/path.dart' as pathPackage;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_options.dart';
 import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/state.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -14,7 +13,7 @@ import 'package:watcher/watcher.dart';
 
 final chooseDownloadArea = RM.inject(() => false);
 
-final areaPickerState = RM.inject<AreaPickerState>(() => null);
+final areaPickerState = RM.inject<LatLngBounds>(() => null);
 
 final downloadsStatusState = RM.injectStream<List<DownloadStatus>>(() async* {
   Future<int> dirStat(Directory dir) => dir

@@ -45,5 +45,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+      <string>app.reitan.skipOhoi.tileDownloader</string>
+    </array>
 </dict>
 </plist>

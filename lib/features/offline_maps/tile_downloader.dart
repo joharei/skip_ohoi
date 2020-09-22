@@ -8,7 +8,6 @@ import 'package:flutter_map/plugin_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:skip_ohoi/features/offline_maps/area_picker/area_picker_options.dart';
 import 'package:skip_ohoi/features/offline_maps/mercantile.dart';
 import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/service.dart';
@@ -73,7 +72,7 @@ Stream _downloadTiles(
 
 Future<void> downloadMapArea(
   MapType mapType,
-  AreaPickerState area,
+  LatLngBounds bounds,
   double minZoom,
   double maxZoom,
 ) async {
@@ -87,10 +86,10 @@ Future<void> downloadMapArea(
     (index) => minZoom.toInt() + index,
   );
   final tileIds = tiles(
-    area.bounds.west,
-    area.bounds.south,
-    area.bounds.east,
-    area.bounds.north,
+    bounds.west,
+    bounds.south,
+    bounds.east,
+    bounds.north,
     zooms,
   );
 
@@ -120,10 +119,10 @@ Future<void> downloadMapArea(
       'minZoom': minZoom,
       'maxZoom': maxZoom,
       'bounds': {
-        'west': area.bounds.west,
-        'south': area.bounds.south,
-        'east': area.bounds.east,
-        'north': area.bounds.north,
+        'west': bounds.west,
+        'south': bounds.south,
+        'east': bounds.east,
+        'north': bounds.north,
       },
     }));
   }).drain();

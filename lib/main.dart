@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flt_worker/flt_worker.dart';
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/home/ui.dart';
+import 'package:skip_ohoi/worker.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +19,7 @@ void main() {
   }).sendPort);
   runZonedGuarded(() {
     runApp(MyApp());
+    initializeWorker(worker);
   }, (error, stackTrace) {
     print('runZonedGuarded: Caught error in my root zone.');
     FirebaseCrashlytics.instance.recordError(error, stackTrace);

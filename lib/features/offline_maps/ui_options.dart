@@ -1,6 +1,7 @@
+import 'package:flt_worker/flt_worker.dart';
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/features/offline_maps/state.dart';
-import 'package:skip_ohoi/features/offline_maps/tile_downloader.dart';
+import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/state.dart';
 
 class ChooseDownloadOptions extends StatefulWidget {
@@ -61,13 +62,27 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                   ),
                   Expanded(
                     child: FlatButton(
-                      onPressed: () {
-                        downloadMapArea(
-                          mapTypeState.state,
-                          areaPickerState.state,
-                          _rangeValues.start,
-                          _rangeValues.end,
-                        );
+                      onPressed: () async {
+                        await cancelWork('app.reitan.skipOhoi.tileDownloader');
+                        enqueueWorkIntent(WorkIntent(
+                          identifier: 'app.reitan.skipOhoi.tileDownloader',
+                          input: {
+                            'mapTypeKey': mapTypeState.state.key,
+                            'minZoom': _rangeValues.start,
+                            'maxZoom': _rangeValues.end,
+                            'bounds': {
+                              'west': areaPickerState.state.west,
+                              'south': areaPickerState.state.south,
+                              'east': areaPickerState.state.east,
+                              'north': areaPickerState.state.north,
+                            },
+                          },
+                          constraints: WorkConstraints(
+                            networkType: NetworkType.unmetered,
+                            storageNotLow: true,
+                            batteryNotLow: true,
+                          ),
+                        ));
                         Navigator.pop(context);
                         chooseDownloadArea.setState((s) => false);
                       },

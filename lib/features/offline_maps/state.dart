@@ -53,7 +53,7 @@ final offlineTilesState = RM.injectComputed<DownloadStatus>(
   compute: (_) {
     return downloadsStatusState.state?.firstWhere(
       (element) => element.mapType.key == mapTypeState.state.key,
-      orElse: null,
+      orElse: () => null,
     );
   },
 );

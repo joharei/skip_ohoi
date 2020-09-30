@@ -1,8 +1,10 @@
 import 'package:flt_worker/flt_worker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:skip_ohoi/features/offline_maps/state.dart';
 import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/state.dart';
+import 'package:states_rebuilder/states_rebuilder.dart';
 
 class ChooseDownloadOptions extends StatefulWidget {
   @override
@@ -61,33 +63,51 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                     endIndent: 8,
                   ),
                   Expanded(
-                    child: FlatButton(
-                      onPressed: () async {
-                        await cancelWork('app.reitan.skipOhoi.tileDownloader');
-                        enqueueWorkIntent(WorkIntent(
-                          identifier: 'app.reitan.skipOhoi.tileDownloader',
-                          input: {
-                            'mapTypeKey': mapTypeState.state.key,
-                            'minZoom': _rangeValues.start,
-                            'maxZoom': _rangeValues.end,
-                            'bounds': {
-                              'west': areaPickerState.state.west,
-                              'south': areaPickerState.state.south,
-                              'east': areaPickerState.state.east,
-                              'north': areaPickerState.state.north,
-                            },
+                    child: StateBuilder(
+                      observeMany: [
+                        () => mapTypeState.getRM,
+                        () => areaPickerState.getRM,
+                      ],
+                      builder: (context, model) {
+                        return FlatButton(
+                          onPressed: () async {
+                            await FlutterLocalNotificationsPlugin()
+                                .resolvePlatformSpecificImplementation<
+                                    IOSFlutterLocalNotificationsPlugin>()
+                                ?.requestPermissions(
+                                  alert: true,
+                                  badge: true,
+                                  sound: true,
+                                );
+
+                            await cancelWork(
+                                'app.reitan.skipOhoi.tileDownloader');
+                            enqueueWorkIntent(WorkIntent(
+                              identifier: 'app.reitan.skipOhoi.tileDownloader',
+                              input: {
+                                'mapTypeKey': mapTypeState.state.key,
+                                'minZoom': _rangeValues.start,
+                                'maxZoom': _rangeValues.end,
+                                'bounds': {
+                                  'west': areaPickerState.state.west,
+                                  'south': areaPickerState.state.south,
+                                  'east': areaPickerState.state.east,
+                                  'north': areaPickerState.state.north,
+                                },
+                              },
+                              constraints: WorkConstraints(
+                                networkType: NetworkType.unmetered,
+                                storageNotLow: true,
+                                batteryNotLow: true,
+                              ),
+                            ));
+                            Navigator.pop(context);
+                            chooseDownloadArea.setState((s) => false);
                           },
-                          constraints: WorkConstraints(
-                            networkType: NetworkType.unmetered,
-                            storageNotLow: true,
-                            batteryNotLow: true,
-                          ),
-                        ));
-                        Navigator.pop(context);
-                        chooseDownloadArea.setState((s) => false);
+                          textColor: Theme.of(context).primaryColor,
+                          child: Text('LAST NED'),
+                        );
                       },
-                      textColor: Theme.of(context).primaryColor,
-                      child: Text('LAST NED'),
                     ),
                   ),
                 ],

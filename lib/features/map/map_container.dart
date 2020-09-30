@@ -138,7 +138,9 @@ class _MapContainerState extends State<MapContainer>
           ),
           mapController: _mapController,
           layers: [
-            if (offlineTilesState.state != null)
+            if (offlineTilesState.state != null &&
+                offlineTilesState.state.filesDownloaded ==
+                    offlineTilesState.state.total)
               TileLayerOptions(
                 urlTemplate: '${offlineTilesState.state.path}/{z}/{x}/{y}.png',
                 maxZoom: offlineTilesState.state.maxZoom,

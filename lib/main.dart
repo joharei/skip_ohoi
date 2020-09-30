@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flt_worker/flt_worker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:skip_ohoi/colors.dart';
 import 'package:skip_ohoi/features/home/ui.dart';
 import 'package:skip_ohoi/worker.dart';
@@ -17,7 +18,17 @@ void main() {
       errorAndStacktrace.last,
     );
   }).sendPort);
-  runZonedGuarded(() {
+  runZonedGuarded(() async {
+    var initializationSettings = InitializationSettings(
+      AndroidInitializationSettings('@drawable/ic_launcher_foreground'),
+      IOSInitializationSettings(
+        requestSoundPermission: false,
+        requestBadgePermission: false,
+        requestAlertPermission: false,
+      ),
+    );
+    await FlutterLocalNotificationsPlugin().initialize(initializationSettings);
+
     runApp(MyApp());
     initializeWorker(worker);
   }, (error, stackTrace) {

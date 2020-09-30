@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:http/http.dart' as http;
@@ -113,8 +114,33 @@ Future<void> downloadMapArea(
         .toList(),
     dir,
   ).asyncMap((_) async {
+    progress++;
+
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'progress',
+      'Nedlasting',
+      'Viser status på nedlasting av kart',
+      channelShowBadge: false,
+      priority: Priority.Low,
+      onlyAlertOnce: true,
+      showProgress: true,
+      maxProgress: total,
+      progress: progress,
+    );
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+      androidPlatformChannelSpecifics,
+      iOSPlatformChannelSpecifics,
+    );
+    await FlutterLocalNotificationsPlugin().show(
+      0,
+      'Laster ned kart',
+      '${mapType.text}: ${(progress / total.toDouble() * 100).toStringAsFixed(0)} % lastet ned',
+      platformChannelSpecifics,
+    );
+
     await File('$dir/download_status.json').writeAsString(jsonEncode({
-      'filesDownloaded': ++progress,
+      'filesDownloaded': progress,
       'total': total,
       'minZoom': minZoom,
       'maxZoom': maxZoom,

@@ -15,6 +15,13 @@ import path_provider
         if let registrar = registry?.registrar(forPlugin: "FLTPathProviderPlugin") {
             FLTPathProviderPlugin.register(with: registrar)
         }
+        if let registrar = registry?.registrar(forPlugin: "FlutterLocalNotificationsPlugin") {
+            FlutterLocalNotificationsPlugin.register(with: registrar)
+        }
+    }
+
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

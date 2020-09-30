@@ -13,6 +13,8 @@ class MainActivity : FlutterActivity() {
         FltWorkerPlugin.registerPluginsForWorkers = Function { registry: PluginRegistry ->
             io.flutter.plugins.pathprovider.PathProviderPlugin.registerWith(
                     registry.registrarFor("io.flutter.plugins.pathprovider.PathProviderPlugin"))
+            com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin.registerWith(
+                    registry.registrarFor("com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin"))
             null
         }
     }

@@ -60,9 +60,11 @@ class OfflineMaps extends StatelessWidget {
                               if (state.filesDownloaded != state.total)
                                 TweenAnimationBuilder(
                                   tween: Tween(
-                                      begin: 0.0,
-                                      end: state.filesDownloaded /
-                                          state.total.toDouble()),
+                                    begin: 0.0,
+                                    end: state.filesDownloaded /
+                                        state.total.toDouble(),
+                                  ),
+                                  curve: Curves.easeInOut,
                                   duration: Duration(milliseconds: 300),
                                   builder: (context, value, child) {
                                     return LinearProgressIndicator(

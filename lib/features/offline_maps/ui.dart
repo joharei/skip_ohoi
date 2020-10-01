@@ -56,7 +56,8 @@ class OfflineMaps extends StatelessWidget {
                                     'Tilgjengelig offline: ${filesize(state.directorySizeInBytes)}')
                               else
                                 Text(
-                                    '${(state.filesDownloaded / state.total.toDouble() * 100).toStringAsFixed(0)} % lastet ned'),
+                                    '${state.filesDownloaded} av ${state.total} fliser (${(state.filesDownloaded / state.total.toDouble() * 100).toStringAsFixed(0)} %) lastet ned'),
+                              SizedBox(height: 8),
                               if (state.filesDownloaded != state.total)
                                 TweenAnimationBuilder(
                                   tween: Tween(
@@ -68,7 +69,12 @@ class OfflineMaps extends StatelessWidget {
                                   duration: Duration(milliseconds: 300),
                                   builder: (context, value, child) {
                                     return LinearProgressIndicator(
-                                        value: value);
+                                      value: value,
+                                      backgroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .secondary
+                                          .withOpacity(0.2),
+                                    );
                                   },
                                 ),
                             ],

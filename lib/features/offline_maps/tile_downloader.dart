@@ -123,9 +123,15 @@ Future<void> downloadMapArea(
       channelShowBadge: false,
       priority: Priority.Low,
       onlyAlertOnce: true,
+      ongoing: true,
       showProgress: true,
       maxProgress: total,
       progress: progress,
+      styleInformation: BigTextStyleInformation(
+        '${mapType.text}: $progress av $total fliser lastet ned',
+        summaryText:
+            '${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
+      ),
     );
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
@@ -135,7 +141,7 @@ Future<void> downloadMapArea(
     await FlutterLocalNotificationsPlugin().show(
       0,
       'Laster ned kart',
-      '${mapType.text}: ${(progress / total.toDouble() * 100).toStringAsFixed(0)} % lastet ned',
+      '${mapType.text}: ${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
       platformChannelSpecifics,
     );
 

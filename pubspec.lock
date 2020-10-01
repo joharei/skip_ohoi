@@ -186,9 +186,11 @@ packages:
   flt_worker:
     dependency: "direct main"
     description:
-      name: flt_worker
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: "bugfix/networkType"
+      resolved-ref: c4977b56678a01b39df70bdae37f605e35bea0c6
+      url: "https://github.com/joharei/flt_worker.git"
+    source: git
     version: "0.1.0"
   flutter:
     dependency: "direct main"

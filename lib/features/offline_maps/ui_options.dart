@@ -80,8 +80,7 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                                   sound: true,
                                 );
 
-                            await cancelWork(
-                                'app.reitan.skipOhoi.tileDownloader');
+                            await cancelAllWork();
                             enqueueWorkIntent(WorkIntent(
                               identifier: 'app.reitan.skipOhoi.tileDownloader',
                               input: {

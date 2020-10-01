@@ -2,6 +2,7 @@ import UIKit
 import Flutter
 import flt_worker
 import path_provider
+import flutter_local_notifications
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {

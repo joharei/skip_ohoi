@@ -123,10 +123,6 @@ class _MapContainerState extends State<MapContainer>
             center: LatLng(59.002671, 5.754133),
             zoom: 10.0,
             maxZoom: 18,
-            // minZoom: offlineTilesState.state?.minZoom,
-            // nePanBoundary: offlineTilesState.state?.bounds?.northEast,
-            // swPanBoundary: offlineTilesState.state?.bounds?.southWest,
-            // slideOnBoundaries: true,
             plugins: [ScaleLayerPlugin(), AreaPickerPlugin()],
             interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
             onPositionChanged: (position, _) {
@@ -139,6 +135,7 @@ class _MapContainerState extends State<MapContainer>
           mapController: _mapController,
           layers: [
             if (offlineTilesState.state != null &&
+                offlineTilesState.state.filesDownloaded != null &&
                 offlineTilesState.state.filesDownloaded ==
                     offlineTilesState.state.total)
               TileLayerOptions(

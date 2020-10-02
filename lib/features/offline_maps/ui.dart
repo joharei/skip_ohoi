@@ -51,14 +51,17 @@ class OfflineMaps extends StatelessWidget {
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (state.filesDownloaded == state.total)
+                              if (state.filesDownloaded == null)
+                                Text('Starter nedlasting…')
+                              else if (state.filesDownloaded == state.total)
                                 Text(
                                     'Tilgjengelig offline: ${filesize(state.directorySizeInBytes)}')
                               else
                                 Text(
                                     '${state.filesDownloaded} av ${state.total} fliser (${(state.filesDownloaded / state.total.toDouble() * 100).toStringAsFixed(0)} %) lastet ned'),
                               SizedBox(height: 8),
-                              if (state.filesDownloaded != state.total)
+                              if (state.filesDownloaded != null &&
+                                  state.filesDownloaded != state.total)
                                 TweenAnimationBuilder(
                                   tween: Tween(
                                     begin: 0.0,

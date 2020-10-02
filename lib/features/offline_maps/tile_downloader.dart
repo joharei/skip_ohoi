@@ -77,85 +77,117 @@ Future<void> downloadMapArea(
   double minZoom,
   double maxZoom,
 ) async {
-  final dir =
-      '${(await getApplicationSupportDirectory()).path}/offline_maps/${mapType.key}';
+  try {
+    final dir =
+        '${(await getApplicationSupportDirectory()).path}/offline_maps/${mapType.key}';
+    final directory = Directory(dir);
+    await directory.create(recursive: true);
 
-  developer.log('Starting');
+    developer.log('Starting');
+    await _postStatus(mapType, dir, minZoom, maxZoom, bounds);
 
-  final zooms = List.generate(
-    (maxZoom - minZoom + 1).toInt(),
-    (index) => minZoom.toInt() + index,
+    final zooms = List.generate(
+      (maxZoom - minZoom + 1).toInt(),
+      (index) => minZoom.toInt() + index,
+    );
+    final tileIds = tiles(
+      bounds.west,
+      bounds.south,
+      bounds.east,
+      bounds.north,
+      zooms,
+    );
+
+    final existingFiles = await directory
+        .list(recursive: true)
+        .whereType<File>()
+        .map((file) => file.path)
+        .toList();
+    final missingTiles = tileIds.where((tile) =>
+        !existingFiles.contains('$dir/${tile.z}/${tile.x}/${tile.y}.png'));
+
+    final total = tileIds.length;
+    developer.log(
+        'Downloading ${missingTiles.length} out of $total tiles to directory: $dir');
+    var progress = total - missingTiles.length;
+    await _downloadTiles(
+      mapType,
+      missingTiles
+          .map((tileId) => Coords(tileId.x.toDouble(), tileId.y.toDouble())
+            ..z = tileId.z.toDouble())
+          .toList(),
+      dir,
+    ).asyncMap((_) async {
+      progress++;
+
+      await _postStatus(
+        mapType,
+        dir,
+        minZoom,
+        maxZoom,
+        bounds,
+        total: total,
+        progress: progress,
+      );
+    }).drain();
+  } finally {
+    FlutterLocalNotificationsPlugin().cancel(0);
+  }
+}
+
+Future _postStatus(
+  MapType mapType,
+  String dir,
+  double minZoom,
+  double maxZoom,
+  LatLngBounds bounds, {
+  int total,
+  int progress,
+}) async {
+  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    'progress',
+    'Nedlasting',
+    'Viser status på nedlasting av kart',
+    channelShowBadge: false,
+    priority: Priority.Low,
+    importance: Importance.Low,
+    onlyAlertOnce: true,
+    ongoing: true,
+    showProgress: progress != null,
+    maxProgress: total,
+    progress: progress,
+    styleInformation: progress != null
+        ? BigTextStyleInformation(
+            '${mapType.text}: $progress av $total fliser lastet ned',
+            summaryText:
+                '${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
+          )
+        : null,
   );
-  final tileIds = tiles(
-    bounds.west,
-    bounds.south,
-    bounds.east,
-    bounds.north,
-    zooms,
+  var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+  var platformChannelSpecifics = NotificationDetails(
+    androidPlatformChannelSpecifics,
+    iOSPlatformChannelSpecifics,
+  );
+  await FlutterLocalNotificationsPlugin().show(
+    0,
+    'Laster ned kart',
+    progress == null
+        ? 'Starter…'
+        : '${mapType.text}: ${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
+    platformChannelSpecifics,
   );
 
-  final existingFiles = await (await Directory(dir).create(recursive: true))
-      .list(recursive: true)
-      .whereType<File>()
-      .map((file) => file.path)
-      .toList();
-  final missingTiles = tileIds.where((tile) =>
-      !existingFiles.contains('$dir/${tile.z}/${tile.x}/${tile.y}.png'));
-
-  final total = tileIds.length;
-  developer.log(
-      'Downloading ${missingTiles.length} out of $total tiles to directory: $dir');
-  var progress = total - missingTiles.length;
-  await _downloadTiles(
-    mapType,
-    missingTiles
-        .map((tileId) => Coords(tileId.x.toDouble(), tileId.y.toDouble())
-          ..z = tileId.z.toDouble())
-        .toList(),
-    dir,
-  ).asyncMap((_) async {
-    progress++;
-
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'progress',
-      'Nedlasting',
-      'Viser status på nedlasting av kart',
-      channelShowBadge: false,
-      priority: Priority.Low,
-      onlyAlertOnce: true,
-      ongoing: true,
-      showProgress: true,
-      maxProgress: total,
-      progress: progress,
-      styleInformation: BigTextStyleInformation(
-        '${mapType.text}: $progress av $total fliser lastet ned',
-        summaryText:
-            '${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
-      ),
-    );
-    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics = NotificationDetails(
-      androidPlatformChannelSpecifics,
-      iOSPlatformChannelSpecifics,
-    );
-    await FlutterLocalNotificationsPlugin().show(
-      0,
-      'Laster ned kart',
-      '${mapType.text}: ${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
-      platformChannelSpecifics,
-    );
-
-    await File('$dir/download_status.json').writeAsString(jsonEncode({
-      'filesDownloaded': progress,
-      'total': total,
-      'minZoom': minZoom,
-      'maxZoom': maxZoom,
-      'bounds': {
-        'west': bounds.west,
-        'south': bounds.south,
-        'east': bounds.east,
-        'north': bounds.north,
-      },
-    }));
-  }).drain();
+  await File('$dir/download_status.json').writeAsString(jsonEncode({
+    'filesDownloaded': progress,
+    'total': total,
+    'minZoom': minZoom,
+    'maxZoom': maxZoom,
+    'bounds': {
+      'west': bounds.west,
+      'south': bounds.south,
+      'east': bounds.east,
+      'north': bounds.north,
+    },
+  }));
 }

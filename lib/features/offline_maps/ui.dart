@@ -1,6 +1,8 @@
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 import 'package:skip_ohoi/features/offline_maps/state.dart';
+import 'package:skip_ohoi/features/offline_maps/tile_downloader.dart'
+    as TileDownloader;
 import 'package:skip_ohoi/map_types.dart';
 
 class OfflineMaps extends StatelessWidget {
@@ -33,7 +35,7 @@ class OfflineMaps extends StatelessWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final state = downloadsStatusState.state[index];
-                        return ListTile(
+                        return ExpansionTile(
                           title: Text(state.mapType.text),
                           leading: Container(
                             child: CircleAvatar(
@@ -47,13 +49,12 @@ class OfflineMaps extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                           ),
-                          isThreeLine: true,
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (state.filesDownloaded == null)
                                 Text('Starter nedlasting…')
-                              else if (state.filesDownloaded == state.total)
+                              else if (!state.active)
                                 Text(
                                     'Tilgjengelig offline: ${filesize(state.directorySizeInBytes)}')
                               else
@@ -82,6 +83,42 @@ class OfflineMaps extends StatelessWidget {
                                 ),
                             ],
                           ),
+                          initiallyExpanded:
+                              downloadsStatusState.state.length == 1,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  if (state.active)
+                                    Tooltip(
+                                      message: 'Avbryt nedlasting',
+                                      child: IconButton(
+                                        icon: Icon(Icons.cancel),
+                                        onPressed: () async {
+                                          await TileDownloader.cancelDownload(
+                                              state);
+                                        },
+                                      ),
+                                    ),
+                                  Tooltip(
+                                    message: 'Slett',
+                                    child: IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: () async {
+                                        await TileDownloader.cancelDownload(
+                                            state);
+                                        await TileDownloader.deleteDownload(
+                                            state.mapType);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
                         );
                       },
                       childCount: downloadsStatusState.state.length,

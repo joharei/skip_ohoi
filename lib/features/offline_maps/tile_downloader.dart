@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 
+import 'package:flt_worker/flt_worker.dart' as FltWorker;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:skip_ohoi/features/offline_maps/mercantile.dart';
+import 'package:skip_ohoi/features/offline_maps/state.dart';
 import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/service.dart';
 import 'package:tuple/tuple.dart';
@@ -69,6 +71,66 @@ Stream _downloadTiles(
           ),
         ),
   );
+}
+
+Future _postStatus(
+  MapType mapType,
+  String dir,
+  double minZoom,
+  double maxZoom,
+  LatLngBounds bounds, {
+  int total,
+  int progress,
+  bool showNotification = true,
+}) async {
+  if (showNotification) {
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'progress',
+      'Nedlasting',
+      'Viser status på nedlasting av kart',
+      channelShowBadge: false,
+      priority: Priority.Low,
+      importance: Importance.Low,
+      onlyAlertOnce: true,
+      ongoing: true,
+      showProgress: progress != null,
+      maxProgress: total,
+      progress: progress,
+      styleInformation: progress != null
+          ? BigTextStyleInformation(
+              '${mapType.text}: $progress av $total fliser lastet ned',
+              summaryText:
+                  '${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
+            )
+          : null,
+    );
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+      androidPlatformChannelSpecifics,
+      iOSPlatformChannelSpecifics,
+    );
+    await FlutterLocalNotificationsPlugin().show(
+      mapType.index,
+      'Laster ned kart',
+      progress == null
+          ? 'Starter…'
+          : '${mapType.text}: ${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
+      platformChannelSpecifics,
+    );
+  }
+
+  await File('$dir/download_status.json').writeAsString(jsonEncode({
+    'filesDownloaded': progress,
+    'total': total,
+    'minZoom': minZoom,
+    'maxZoom': maxZoom,
+    'bounds': {
+      'west': bounds.west,
+      'south': bounds.south,
+      'east': bounds.east,
+      'north': bounds.north,
+    },
+  }));
 }
 
 Future<void> downloadMapArea(
@@ -131,63 +193,28 @@ Future<void> downloadMapArea(
       );
     }).drain();
   } finally {
-    FlutterLocalNotificationsPlugin().cancel(mapType.index);
+    await FlutterLocalNotificationsPlugin().cancel(mapType.index);
   }
 }
 
-Future _postStatus(
-  MapType mapType,
-  String dir,
-  double minZoom,
-  double maxZoom,
-  LatLngBounds bounds, {
-  int total,
-  int progress,
-}) async {
-  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    'progress',
-    'Nedlasting',
-    'Viser status på nedlasting av kart',
-    channelShowBadge: false,
-    priority: Priority.Low,
-    importance: Importance.Low,
-    onlyAlertOnce: true,
-    ongoing: true,
-    showProgress: progress != null,
-    maxProgress: total,
-    progress: progress,
-    styleInformation: progress != null
-        ? BigTextStyleInformation(
-            '${mapType.text}: $progress av $total fliser lastet ned',
-            summaryText:
-                '${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
-          )
-        : null,
+Future<void> cancelDownload(DownloadStatus status) async {
+  await FltWorker.cancelWork(
+      'app.reitan.skipOhoi.tileDownloader.${status.mapType.key}');
+  await FlutterLocalNotificationsPlugin().cancel(status.mapType.index);
+  await _postStatus(
+    status.mapType,
+    status.path,
+    status.minZoom,
+    status.maxZoom,
+    status.bounds,
+    progress: 0,
+    total: 0,
+    showNotification: false,
   );
-  var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-  var platformChannelSpecifics = NotificationDetails(
-    androidPlatformChannelSpecifics,
-    iOSPlatformChannelSpecifics,
-  );
-  await FlutterLocalNotificationsPlugin().show(
-    mapType.index,
-    'Laster ned kart',
-    progress == null
-        ? 'Starter…'
-        : '${mapType.text}: ${(progress / total.toDouble() * 100).toStringAsFixed(0)} %',
-    platformChannelSpecifics,
-  );
+}
 
-  await File('$dir/download_status.json').writeAsString(jsonEncode({
-    'filesDownloaded': progress,
-    'total': total,
-    'minZoom': minZoom,
-    'maxZoom': maxZoom,
-    'bounds': {
-      'west': bounds.west,
-      'south': bounds.south,
-      'east': bounds.east,
-      'north': bounds.north,
-    },
-  }));
+Future<void> deleteDownload(MapType mapType) async {
+  final dir =
+      '${(await getApplicationSupportDirectory()).path}/offline_maps/${mapType.key}';
+  await Directory(dir).delete(recursive: true);
 }

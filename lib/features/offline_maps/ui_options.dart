@@ -1,7 +1,9 @@
-import 'package:flt_worker/flt_worker.dart';
+import 'package:flt_worker/flt_worker.dart' as FltWorker;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:skip_ohoi/features/offline_maps/state.dart';
+import 'package:skip_ohoi/features/offline_maps/tile_downloader.dart'
+    as TileDownloader;
 import 'package:skip_ohoi/map_types.dart';
 import 'package:skip_ohoi/state.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
@@ -80,11 +82,13 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                                   sound: true,
                                 );
 
-                            final identifier =
-                                'app.reitan.skipOhoi.tileDownloader.${mapTypeState.state.key}';
-                            await cancelWork(identifier);
-                            enqueueWorkIntent(WorkIntent(
-                              identifier: identifier,
+                            if (offlineTilesState.state != null) {
+                              await TileDownloader.cancelDownload(
+                                  offlineTilesState.state);
+                            }
+                            FltWorker.enqueueWorkIntent(FltWorker.WorkIntent(
+                              identifier:
+                                  'app.reitan.skipOhoi.tileDownloader.${mapTypeState.state.key}',
                               input: {
                                 'mapTypeKey': mapTypeState.state.key,
                                 'minZoom': _rangeValues.start,
@@ -96,8 +100,8 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                                   'north': areaPickerState.state.north,
                                 },
                               },
-                              constraints: WorkConstraints(
-                                networkType: NetworkType.unmetered,
+                              constraints: FltWorker.WorkConstraints(
+                                networkType: FltWorker.NetworkType.unmetered,
                                 storageNotLow: true,
                                 batteryNotLow: true,
                               ),

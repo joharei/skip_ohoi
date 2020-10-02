@@ -44,7 +44,8 @@ class MyApp extends StatelessWidget {
       title: 'Skip ohoi!',
       theme: ThemeData(
         primaryColor: navyBlue,
-        iconTheme: IconThemeData(color: richBlack),
+        iconTheme:
+            IconThemeData.fallback().copyWith(color: richBlack, opacity: 0.87),
         textTheme: Theme.of(context).textTheme.apply(
               bodyColor: richBlack,
               displayColor: richBlack,

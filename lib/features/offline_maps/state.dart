@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter_map/flutter_map.dart';
@@ -30,6 +31,9 @@ final downloadsStatusState = RM.injectStream<List<DownloadStatus>>(() async* {
           .list(recursive: true)
           .whereType<File>()
           .where((file) => file.path.endsWith('download_status.json'))
+          .doOnData((event) {
+            developer.log(event.path);
+          })
           .map((file) => (Platform.isAndroid
                       ? PollingFileWatcher(file.path)
                       : FileWatcher(file.path))
@@ -107,6 +111,8 @@ class DownloadStatus {
         path,
         size ?? directorySizeInBytes,
       );
+
+  bool get active => filesDownloaded == null || filesDownloaded != total;
 
   @override
   bool operator ==(Object other) =>

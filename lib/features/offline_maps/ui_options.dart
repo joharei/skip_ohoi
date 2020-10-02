@@ -80,9 +80,11 @@ class _ChooseDownloadOptionsState extends State<ChooseDownloadOptions> {
                                   sound: true,
                                 );
 
-                            await cancelAllWork();
+                            final identifier =
+                                'app.reitan.skipOhoi.tileDownloader.${mapTypeState.state.key}';
+                            await cancelWork(identifier);
                             enqueueWorkIntent(WorkIntent(
-                              identifier: 'app.reitan.skipOhoi.tileDownloader',
+                              identifier: identifier,
                               input: {
                                 'mapTypeKey': mapTypeState.state.key,
                                 'minZoom': _rangeValues.start,

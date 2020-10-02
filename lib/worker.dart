@@ -5,7 +5,8 @@ import 'package:skip_ohoi/features/offline_maps/tile_downloader.dart';
 import 'package:skip_ohoi/map_types.dart';
 
 Future<void> worker(WorkPayload payload) {
-  if (payload.tags.contains('app.reitan.skipOhoi.tileDownloader')) {
+  if (payload.tags
+      .any((tag) => tag.startsWith('app.reitan.skipOhoi.tileDownloader'))) {
     return downloadMapArea(
       MapTypeExtension.parse(payload.input['mapTypeKey']),
       LatLngBounds(

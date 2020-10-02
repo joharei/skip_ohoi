@@ -47,7 +47,9 @@
 	<false/>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
-      <string>app.reitan.skipOhoi.tileDownloader</string>
+      <string>app.reitan.skipOhoi.tileDownloader.enc</string>
+      <string>app.reitan.skipOhoi.tileDownloader.sjokartraster</string>
+      <string>app.reitan.skipOhoi.tileDownloader.eniro</string>
     </array>
 </dict>
 </plist>

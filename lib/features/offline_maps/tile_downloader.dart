@@ -131,7 +131,7 @@ Future<void> downloadMapArea(
       );
     }).drain();
   } finally {
-    FlutterLocalNotificationsPlugin().cancel(0);
+    FlutterLocalNotificationsPlugin().cancel(mapType.index);
   }
 }
 
@@ -170,7 +170,7 @@ Future _postStatus(
     iOSPlatformChannelSpecifics,
   );
   await FlutterLocalNotificationsPlugin().show(
-    0,
+    mapType.index,
     'Laster ned kart',
     progress == null
         ? 'Starter…'
